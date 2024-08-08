@@ -10,9 +10,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-public class MyUserDetails implements UserDetails {
+public class AppUserDetails implements UserDetails {
     private final User user;
-    public MyUserDetails(User user){
+    public AppUserDetails(User user){
         this.user = user;
     }
     @Override
