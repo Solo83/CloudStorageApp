@@ -2,6 +2,7 @@ package com.solo83.config;
 
 
 import com.solo83.entity.User;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,12 +10,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
-
+@AllArgsConstructor
 public class AppUserDetails implements UserDetails {
     private final User user;
-    public AppUserDetails(User user){
-        this.user = user;
-    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Arrays.stream(user.getRole().split(", "))

@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/general :: header}">
+    </th:block>
+</head>
+<body>
+    <th:block  th:insert="~{fragments/general :: navbar}"> </th:block>
+    <p th:text="|Logged User is, ${userName}!|"/>
+</body>
+</html>
+
