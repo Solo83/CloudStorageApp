@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/")
@@ -45,7 +46,9 @@ public class AuthController {
     }
 
     @PostMapping("/register/save")
-    public String registration(@ModelAttribute("user") @Valid UserDto userDto,
+    public String registration(
+            @RequestParam String passwordConfirm,
+            @ModelAttribute("user") @Valid UserDto userDto,
                                BindingResult result,
                                Model model){
         User existingUser = userService.findByName(userDto.getName());
@@ -53,6 +56,12 @@ public class AuthController {
             result.rejectValue("name", "error.name",
                     "There is already an account registered with the same username");
         }
+
+        if(!userDto.getPassword().equals(passwordConfirm)){
+            result.rejectValue("password", "password",
+                    "Password confirmation mismatch");
+        }
+
         if(result.hasErrors()){
             model.addAttribute("user", userDto);
             return "/register";
