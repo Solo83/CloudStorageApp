@@ -23,6 +23,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-data-redis")
     implementation("jakarta.validation:jakarta.validation-api:3.1.0")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("io.minio:minio:8.5.11")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:mysql")

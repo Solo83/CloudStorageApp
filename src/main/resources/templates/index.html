@@ -1,12 +1,26 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <th:block th:replace="~{fragments/general :: header}">
     </th:block>
 </head>
 <body>
-    <th:block  th:insert="~{fragments/general :: navbar}"> </th:block>
-    <p th:text="|Logged User is, ${userName}!|"/>
+<th:block th:insert="~{fragments/general :: navbar}"></th:block>
+
+<div sec:authorize="isAuthenticated()">
+    <div>
+        <p class="text-center pt-2">Welcome <a th:if="${#vars['userName']}" th:text="${userName}"></a></p>
+    </div>
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="ms-auto">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item" th:each="item : ${userObjects}" th:if="${item.isDirectory()}">
+                <a th:href="@{/home(path=${item.getUrlEncodedPath()})}"
+                   th:text="${item.getSimpleName()}">
+                </a>
+        </ul>
+    </nav>
+</div>
 </body>
 </html>
 

@@ -4,6 +4,7 @@ import com.solo83.dto.UserDto;
 import com.solo83.entity.User;
 import com.solo83.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
+    private final Environment env;
 
     public void saveUser(UserDto userDto) {
         User user = new User();
@@ -34,6 +36,11 @@ public class UserService {
         return users.stream()
                 .map(this::mapToUserDto)
                 .collect(Collectors.toList());
+    }
+
+    public String getUserRootFolder(String userId) {
+        String folderPattern = env.getProperty("minio.user.directory.pattern");
+        return String.format(folderPattern, userId);
     }
 
     private UserDto mapToUserDto(User user){

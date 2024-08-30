@@ -39,10 +39,9 @@ class UserServiceTest {
     @Autowired
     private DataSource dataSource;
 
-
     @Container
     @ServiceConnection
-    private static final MySQLContainer mySQLContainer = new MySQLContainer<>("mysql:8.0.30")
+    private static final MySQLContainer mySQLContainer = new MySQLContainer<>("mysql:8.0")
             .withDatabaseName("db_test")
             .withUsername("user")
             .withPassword("123")
