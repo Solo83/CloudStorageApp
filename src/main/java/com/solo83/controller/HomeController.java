@@ -43,8 +43,7 @@ public class HomeController {
                     path = "/";
                 }
                 String fullPath = appendUserRootFolder(path, userRootFolder);
-                List<BreadCrumbDTO> breadCrumb = breadCrumbService.getBreadCrumb(fullPath, userRootFolder);
-                log.info("BreadCrumb: {}", breadCrumb);
+                List<BreadCrumbDTO> breadCrumb = breadCrumbService.getBreadCrumbsChain(fullPath);
 
                 model.addAttribute("userName", userName);
                 model.addAttribute("userObjects", breadCrumb);
@@ -61,6 +60,14 @@ public class HomeController {
         Long id = userService.findByName(auth.getName()).getId();
         String userFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
         minioService.createEmptyFolder(userFolder);
+
+   /*     minioService.createEmptyFolder("user-3-files/test1/test1subfolder1");
+        minioService.createEmptyFolder("user-3-files/test2");
+        minioService.createEmptyFolder("user-3-files/test2/test2subfolder1");
+        minioService.createEmptyFolder("user-3-files/test2/test2subfolder1/subfolder1");
+        minioService.createEmptyFolder("user-3-files/test5/test2subfolder1");
+
+*/
         return "redirect:/home";
     }
 

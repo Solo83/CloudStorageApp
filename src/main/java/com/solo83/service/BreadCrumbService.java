@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -22,47 +22,47 @@ public class BreadCrumbService {
     private final MinioService minioService;
 
     @SneakyThrows
-    public List<BreadCrumbDTO> getBreadCrumb(String path,String userRootFolder) {
-
-        if (!userRootFolder.endsWith("/")) {
-            userRootFolder = userRootFolder + "/";
-        }
-
-        BreadCrumbDTO rootBreadCrumbDTO = new BreadCrumbDTO();
-        rootBreadCrumbDTO.setDirectory(true);
-        rootBreadCrumbDTO.setSimpleName("Home");
-        rootBreadCrumbDTO.setUrlEncodedPath(URLEncoder.encode("/", StandardCharsets.UTF_8));
-
-        List<BreadCrumbDTO> breadCrumbDTOList = new LinkedList<>();
+    public List<BreadCrumbDTO> getBreadCrumbsChain(String path) {
+        List<BreadCrumbDTO> breadCrumbDTOList = new ArrayList<>();
         Iterable<Result<Item>> objects = minioService.getObjects(path);
-        breadCrumbDTOList.add(rootBreadCrumbDTO);
 
         for (Result<Item> result : objects) {
+            String pathToObject = result.get().objectName().substring(path.indexOf("/"));
+            String objectName = result.get().objectName().substring(path.length());
 
-            String objectName = result.get().objectName();
-
-            if (objectName.equals(userRootFolder)){
+            if (objectName.isEmpty()) {
+                String[] pathArray = pathToObject.split("/");
+                if (pathArray.length > 0) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    for (String s : pathArray) {
+                        BreadCrumbDTO breadCrumbFromPath = BreadCrumbDTO.builder()
+                                .simpleName(s.isEmpty() ? "root" : s)
+                                .urlEncodedPath(URLEncoder.encode(stringBuilder.append(s).append("/").toString(), StandardCharsets.UTF_8))
+                                .isDirectory(true)
+                                .build();
+                        //breadCrumbFromPath.setUrlEncodedPath(stringBuilder.append(s).append("/").toString());
+                        breadCrumbDTOList.add(breadCrumbFromPath);
+                    }
+                }
+                if (!breadCrumbDTOList.isEmpty()) {
+                    BreadCrumbDTO activeBreadCrumb = breadCrumbDTOList.get(breadCrumbDTOList.size() - 1);
+                    activeBreadCrumb.setActive(true);
+                }
                 continue;
             }
-
-            // Удаляем префикс userRootFolder из objectName
-            if (objectName.startsWith(userRootFolder)) {
-                objectName = objectName.substring(userRootFolder.length());
+            String[] split = objectName.split("/");
+            if (split.length == 1) { // subs in current path
+                BreadCrumbDTO breadCrumbDTO = BreadCrumbDTO.builder()
+                        .simpleName(split[split.length - 1])
+                        .urlEncodedPath(URLEncoder.encode(pathToObject, StandardCharsets.UTF_8))
+                        .isDirectory(objectName.endsWith("/"))
+                        .isSubfolder(true)
+                        .build();
+                //breadCrumbDTO.setUrlEncodedPath(pathToObject);
+                breadCrumbDTOList.add(breadCrumbDTO);
             }
-
-            BreadCrumbDTO breadCrumbDTO = new BreadCrumbDTO();
-            if (objectName.endsWith("/")) {
-                breadCrumbDTO.setDirectory(true);
-            }
-
-            String[] pathArray = objectName.split("/");
-            breadCrumbDTO.setSimpleName(pathArray[pathArray.length - 1]);
-
-            objectName = URLEncoder.encode(objectName, StandardCharsets.UTF_8);
-            breadCrumbDTO.setUrlEncodedPath(objectName);
-            breadCrumbDTOList.add(breadCrumbDTO);
-            log.info(breadCrumbDTO.toString());
         }
+        log.info("Number of breadcrumbs: {}", breadCrumbDTOList.size());
         return breadCrumbDTOList;
     }
 }
