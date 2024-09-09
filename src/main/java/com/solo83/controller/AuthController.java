@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Optional;
+
 @Controller
 @AllArgsConstructor
 @Slf4j
@@ -40,10 +42,15 @@ public class AuthController {
             @ModelAttribute("user") @Valid UserDto userDto,
                                BindingResult result,
                                Model model){
-        User existingUser = userService.findByName(userDto.getName());
-        if(existingUser != null && existingUser.getName() != null && !existingUser.getName().isEmpty()){
-            result.rejectValue("name", "error.name",
-                    "There is already an account registered with the same username");
+
+        Optional<User> existingUserOpt = userService.findByName(userDto.getName());
+
+        if (existingUserOpt.isPresent()) {
+            User existingUser = existingUserOpt.get();
+            if (existingUser.getName() != null && !existingUser.getName().isEmpty()) {
+                result.rejectValue("name", "error.name",
+                        "There is already an account registered with the same username");
+            }
         }
 
         if(!userDto.getPassword().equals(passwordConfirm)){

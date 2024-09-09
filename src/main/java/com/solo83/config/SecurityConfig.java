@@ -34,8 +34,8 @@ public class SecurityConfig {
         return  http
                 .authorizeHttpRequests(auth -> auth
                         //.requestMatchers("/admins").authenticated()
-                        //.requestMatchers("/home/**").authenticated()
-                        .requestMatchers("/","/home/**","/register/**").permitAll())
+                        .requestMatchers("/home/**").authenticated()
+                        .requestMatchers("/","/register/**").permitAll())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .defaultSuccessUrl("/home/create")

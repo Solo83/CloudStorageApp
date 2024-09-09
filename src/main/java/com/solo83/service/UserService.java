@@ -9,13 +9,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final Environment env;
 
     public void saveUser(UserDto userDto) {
@@ -27,8 +28,8 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public User findByName(String name) {
-        return userRepository.findByName(name).orElse(null);
+    public Optional<User> findByName(String name) {
+        return userRepository.findByName(name);
     }
 
     public List<UserDto> findAllUsers() {

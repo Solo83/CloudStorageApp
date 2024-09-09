@@ -24,6 +24,7 @@ public class MinioService {
 
     private final MinioClient minioClient;
     private final Environment env;
+    private final String DIRECTORY_PREFIX = "/";
 
     public MinioService(MinioClient minioClient, Environment env) {
         this.minioClient = minioClient;
@@ -45,7 +46,6 @@ public class MinioService {
     }
 
     public void createEmptyFolder(String pathToFolder) {
-        String DIRECTORY_PREFIX = "/";
         String newFolder = pathToFolder + DIRECTORY_PREFIX;
         if (!isObjectExist(newFolder)) {
             try {

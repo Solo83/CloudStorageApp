@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -34,9 +35,9 @@ public class HomeController {
     public String home(@RequestParam(value = "path", required = false) String path, Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth.isAuthenticated()) {
-            User user = userService.findByName(auth.getName());
-            if (user != null) {
-                Long id = user.getId();
+            Optional<User> user = userService.findByName(auth.getName());
+            if (user.isPresent()) {
+                Long id = user.get().getId();
                 String userName = auth.getName();
                 String userRootFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
                 if (path == null) {
@@ -57,9 +58,14 @@ public class HomeController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String createUserFolder() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long id = userService.findByName(auth.getName()).getId();
-        String userFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
-        minioService.createEmptyFolder(userFolder);
+        Optional<User> user = userService.findByName(auth.getName());
+        if (user.isPresent()) {
+            Long id = user.get().getId();
+            String userFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
+            minioService.createEmptyFolder(userFolder);
+
+        }
+
 
    /*     minioService.createEmptyFolder("user-3-files/test1/test1subfolder1");
         minioService.createEmptyFolder("user-3-files/test2");
