@@ -67,14 +67,28 @@ public class HomeController {
         }
 
 
-   /*     minioService.createEmptyFolder("user-3-files/test1/test1subfolder1");
+    /*  minioService.createEmptyFolder("user-3-files/test1/test1subfolder1");
         minioService.createEmptyFolder("user-3-files/test2");
         minioService.createEmptyFolder("user-3-files/test2/test2subfolder1");
         minioService.createEmptyFolder("user-3-files/test2/test2subfolder1/subfolder1");
         minioService.createEmptyFolder("user-3-files/test5/test2subfolder1");
-
-*/
+    */
         return "redirect:/home";
+    }
+
+    @GetMapping(value = "/home/remove")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public String removeUserObject() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Optional<User> user = userService.findByName(auth.getName());
+        if (user.isPresent()) {
+            Long id = user.get().getId();
+            String userRootFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
+           // String fullPath = appendUserRootFolder(path, userRootFolder);
+          //  minioService.removeObject(fullPath);
+        }
+
+        return "redirect:/home"; // надо чтобы в ту же папку вернуло где удаляли
     }
 
 

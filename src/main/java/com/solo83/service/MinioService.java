@@ -24,7 +24,7 @@ public class MinioService {
 
     private final MinioClient minioClient;
     private final Environment env;
-    private final String DIRECTORY_PREFIX = "/";
+    private final static String DIRECTORY_PREFIX = "/";
 
     public MinioService(MinioClient minioClient, Environment env) {
         this.minioClient = minioClient;

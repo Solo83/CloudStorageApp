@@ -35,7 +35,8 @@ public class BreadCrumbService {
             try {
                 objectName = result.get().objectName();
             } catch (Exception e) {
-                log.error("Error while getting objectName", e);}
+                log.error("Error while getting objectName", e);
+            }
 
             String pathWithoutUserFolder = objectName.substring(path.indexOf("/")); // remove user folder from path
             String objectNameWithoutPath = objectName.substring(path.length()); // remove path from objectName
