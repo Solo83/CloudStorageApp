@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -33,12 +33,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return  http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admins").authenticated()
-                        .requestMatchers("/", "/home","/register/**").permitAll())
+                        //.requestMatchers("/admins").authenticated()
+                        .requestMatchers("/home/**").authenticated()
+                        .requestMatchers("/","/register/**").permitAll())
                 .formLogin(form -> form
                         .loginPage("/login")
-                        //.loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/home")
+                        .defaultSuccessUrl("/home/create")
                         .permitAll())
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login?logout")
@@ -47,10 +47,10 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .build();
     }
-    @Bean //Ставим степень кодировки, с которой кодировали пароль в базе
+
+    @Bean
     public PasswordEncoder passwordEncoder(){
-        //return new BCryptPasswordEncoder(5);
-        return NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder();
     }
 
 }

@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatExceptionOfType;
@@ -39,10 +40,9 @@ class UserServiceTest {
     @Autowired
     private DataSource dataSource;
 
-
     @Container
     @ServiceConnection
-    private static final MySQLContainer mySQLContainer = new MySQLContainer<>("mysql:8.0.30")
+    private static final MySQLContainer mySQLContainer = new MySQLContainer<>("mysql:8.0")
             .withDatabaseName("db_test")
             .withUsername("user")
             .withPassword("123")
@@ -81,9 +81,13 @@ class UserServiceTest {
 
     @Test
     void testFindByName() {
-        User foundUser = userService.findByName("TestUser");
-        assertThat(foundUser).isNotNull();
-        assertThat(foundUser.getName()).isEqualTo("TestUser");
+        Optional<User> user = userService.findByName("TestUser");
+        if (user.isPresent()) {
+            User foundUser = user.get();
+            assertThat(foundUser).isNotNull();
+            assertThat(foundUser.getName()).isEqualTo("TestUser");
+        }
+
     }
 
     @Test

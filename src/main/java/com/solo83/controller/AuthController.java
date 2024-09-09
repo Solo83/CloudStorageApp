@@ -5,32 +5,23 @@ import com.solo83.entity.User;
 import com.solo83.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Optional;
+
 @Controller
-@RequestMapping("/")
 @AllArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final UserService userService;
-
-    @GetMapping("/home")
-    public String home(Model model) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userName = auth.getName();
-        model.addAttribute("userName", userName);
-        return "index";
-    }
 
     @GetMapping("/login")
     String login() {
@@ -51,10 +42,15 @@ public class AuthController {
             @ModelAttribute("user") @Valid UserDto userDto,
                                BindingResult result,
                                Model model){
-        User existingUser = userService.findByName(userDto.getName());
-        if(existingUser != null && existingUser.getName() != null && !existingUser.getName().isEmpty()){
-            result.rejectValue("name", "error.name",
-                    "There is already an account registered with the same username");
+
+        Optional<User> existingUserOpt = userService.findByName(userDto.getName());
+
+        if (existingUserOpt.isPresent()) {
+            User existingUser = existingUserOpt.get();
+            if (existingUser.getName() != null && !existingUser.getName().isEmpty()) {
+                result.rejectValue("name", "error.name",
+                        "There is already an account registered with the same username");
+            }
         }
 
         if(!userDto.getPassword().equals(passwordConfirm)){
@@ -70,11 +66,11 @@ public class AuthController {
         return "redirect:/register?success";
     }
 
-    @GetMapping("/admins")
+   /* @GetMapping("/admins")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String pageForAdmins(){
         return "This is page for only admins";
     }
-
+*/
 }
 

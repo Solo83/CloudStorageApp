@@ -16,21 +16,30 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: 'db'
-      # So you don't have to use root, but you can if you like
       MYSQL_USER: 'user'
-      # You can use whatever password you like
       MYSQL_PASSWORD: '123'
-      # Password for root access
       MYSQL_ROOT_PASSWORD: '123'
     ports:
-      # <Port exposed> : <MySQL Port running inside container>
       - '3306:3306'
     expose:
-      # Opens port 3306 on the container
       - '3306'
       # Where our data will be persisted
     volumes:
       - my-db:/var/lib/mysql
+  minio:
+    restart: always
+    image: quay.io/minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_DEFAULT_BUCKETS: user-files
+    volumes:
+     - my-db:/var/lib/minio:/data
+    command: server /data --console-address ":9001"
 # Names our volume
 volumes:
   my-db:
