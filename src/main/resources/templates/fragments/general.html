@@ -44,16 +44,29 @@
 </div>
 
 <div class="d-inline" th:fragment="remove_button">
-    <a
-            th:href="@{/home/remove(pathToObject=${item.urlEncodedPath()})}"
-            th:data-confirm-delete="|Are you sure to delete ${item.simpleName()}?|"
-            th:onclick="return confirm(this.getAttribute('data-confirm-delete'))"
-            class="d-inline-block link-dark ms-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash"
-             viewBox="0 0 16 16">
-            <path d="M5.5 0a.5.5 0 0 1 .5.5V1h5V.5a.5.5 0 0 1 1 0V1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-1.342l-.5 10H2.342l-.5-10H0a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1h1V.5a.5.5 0 0 1 .5-.5h4zM1.5 2v1h13V2H1.5zM4 4h8l.5 10H3.5L4 4z"/>
-        </svg>
-    </a>
+    <!-- Form for deletion -->
+    <form class="d-inline"
+          th:data-confirm-delete="|Are you sure to delete ${item.simpleName()}?|"
+          th:action="@{/home(pathToObject=${item.urlEncodedPath()})}"
+            method="post"
+            onsubmit="return confirmDeletion(this)">
+        <!-- Hidden input to indicate DELETE method -->
+        <input type="hidden" name="_method" value="delete">
+
+        <!-- Delete button -->
+        <button type="submit"
+                class="link-dark btn btn-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                <path d="M5.5 0a.5.5 0 0 1 .5.5V1h5V.5a.5.5 0 0 1 1 0V1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-1.342l-.5 10H2.342l-.5-10H0a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1h1V.5a.5.5 0 0 1 .5-.5h4zM1.5 2v1h13V2H1.5zM4 4h8l.5 10H3.5L4 4z"/>
+            </svg>
+        </button>
+    </form>
+    <script>
+        function confirmDeletion(form) {
+            const confirmMessage = form.getAttribute('data-confirm-delete');
+            return confirm(confirmMessage);
+        }
+    </script>
 </div>
 
 </body>

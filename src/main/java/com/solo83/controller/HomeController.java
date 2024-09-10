@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,13 +63,23 @@ public class HomeController {
                     Long id = user.getId();
                     String userFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
                     minioService.createEmptyFolder(userFolder);
+
+                    minioService.createEmptyFolder("user-3-files/test1/");
+                    minioService.createEmptyFolder("user-3-files/test1/test1subfolder1");
+                    minioService.createEmptyFolder("user-3-files/test2");
+                    minioService.createEmptyFolder("user-3-files/test3");
+                    minioService.createEmptyFolder("user-3-files/test2/test2subfolder1");
+                    minioService.createEmptyFolder("user-3-files/test2/test2subfolder1/subfolder1");
+                    minioService.createEmptyFolder("user-3-files/test2/test2subfolder1/subfolder1/subfolder2");
+                    minioService.createEmptyFolder("user-3-files/test5/test2subfolder1");
+
                     return "redirect:/home";
                 })
                 .orElse("redirect:/"); // Default redirect if user is not found
     }
 
 
-    @GetMapping(value = "/home/remove")
+    @DeleteMapping(value = "/home")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String removeUserObject(@RequestParam String pathToObject, HttpServletRequest request) {
         return Optional.of(SecurityContextHolder.getContext().getAuthentication())
