@@ -8,6 +8,7 @@
 <!-- Navbar -->
 <th:block th:insert="~{fragments/general :: navbar}"></th:block>
 
+<!-- Show if Authenticated-->
 <div sec:authorize="isAuthenticated()">
     <div>
         <p class="text-center pt-2" th:if="${#vars['userName']}" th:text="${'Welcome to Disk ' + userName}">
@@ -32,7 +33,7 @@
 
                 <a th:remove="${item.isActive()}? tag" th:href="@{/home(path=${item.urlEncodedPath()})}"
                    th:text="${item.simpleName()}"
-                   th:classappend="'link-secondary'"></a>
+                   th:classappend="'link-dark'"></a>
             </li>
         </ol>
     </nav>

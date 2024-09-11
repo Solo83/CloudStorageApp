@@ -22,6 +22,7 @@ public class AppUserDetails implements UserDetails {
                 .collect(Collectors.toList());
     }
 
+    public Long getUserId(){ return user.getId(); }
     @Override
     public String getPassword() { return user.getPassword(); }
     @Override

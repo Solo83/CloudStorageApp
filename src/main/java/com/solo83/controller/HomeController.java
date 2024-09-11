@@ -1,5 +1,6 @@
 package com.solo83.controller;
 
+import com.solo83.config.AppUserDetails;
 import com.solo83.dto.BreadCrumbDTO;
 import com.solo83.service.BreadCrumbService;
 import com.solo83.service.MinioService;
@@ -36,11 +37,13 @@ public class HomeController {
     public String home(@RequestParam(value = "path", required = false) String path, Model model) {
         return Optional.of(SecurityContextHolder.getContext().getAuthentication())
                 .filter(Authentication::isAuthenticated)
-                .map(Authentication::getName)
-                .flatMap(userService::findByName)
-                .map(user -> {
-                    Long id = user.getId();
-                    String userName = user.getName();
+                .map(Authentication::getPrincipal)
+                .flatMap(principal -> principal instanceof AppUserDetails
+                        ? Optional.of((AppUserDetails) principal)
+                        : Optional.empty())
+                .map(appUserDetails -> {
+                    Long id = appUserDetails.getUserId();
+                    String userName = appUserDetails.getUsername();
                     String userRootFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
                     String resolvedPath = Optional.ofNullable(path).orElse("/");
                     String fullPath = appendUserRootFolder(resolvedPath, userRootFolder);
@@ -49,7 +52,7 @@ public class HomeController {
                     model.addAttribute("userObjects", breadCrumb);
                     return "index";
                 })
-                .orElse("redirect:/"); // Return "index" if user is not found or not authenticated
+                .orElse("redirect:/"); // Return "/" if user is not found or not authenticated
     }
 
 
@@ -57,10 +60,12 @@ public class HomeController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String createUserFolder() {
         return Optional.of(SecurityContextHolder.getContext().getAuthentication())
-                .map(Authentication::getName)
-                .flatMap(userService::findByName)
-                .map(user -> {
-                    Long id = user.getId();
+                .map(Authentication::getPrincipal)
+                .flatMap(principal -> principal instanceof AppUserDetails
+                        ? Optional.of((AppUserDetails) principal)
+                        : Optional.empty())
+                .map(appUserDetails -> {
+                    Long id = appUserDetails.getUserId();
                     String userFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
                     minioService.createEmptyFolder(userFolder);
 
@@ -75,7 +80,7 @@ public class HomeController {
 
                     return "redirect:/home";
                 })
-                .orElse("redirect:/"); // Default redirect if user is not found
+                .orElse("redirect:/"); // Return "/" if user is not found or not authenticated
     }
 
 
@@ -83,16 +88,18 @@ public class HomeController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String removeUserObject(@RequestParam String pathToObject, HttpServletRequest request) {
         return Optional.of(SecurityContextHolder.getContext().getAuthentication())
-                .map(Authentication::getName)
-                .flatMap(userService::findByName)
-                .map(user -> {
-                    Long id = user.getId();
+                .map(Authentication::getPrincipal)
+                .flatMap(principal -> principal instanceof AppUserDetails
+                        ? Optional.of((AppUserDetails) principal)
+                        : Optional.empty())
+                .map(appUserDetails -> {
+                    Long id = appUserDetails.getUserId();
                     String userRootFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
                     String fullPath = appendUserRootFolder(pathToObject, userRootFolder);
                     minioService.removeObject(fullPath);
                     return getPreviousPageByRequest(request).orElse("/home");
                 })
-                .orElse("/"); // Go to home page if user is not found
+                .orElse("/"); // Return "/" if user is not found or not authenticated
     }
 
 
