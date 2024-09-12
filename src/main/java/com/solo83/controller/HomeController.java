@@ -4,6 +4,7 @@ import com.solo83.config.AppUserDetails;
 import com.solo83.dto.BreadCrumbDTO;
 import com.solo83.service.BreadCrumbService;
 import com.solo83.service.MinioService;
+import com.solo83.service.PathService;
 import com.solo83.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -15,11 +16,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,22 +32,18 @@ public class HomeController {
     private final MinioService minioService;
     private final BreadCrumbService breadCrumbService;
     private final UserService userService;
+    private final PathService pathService;
 
 
     @RequestMapping("/home")
     public String home(@RequestParam(value = "path", required = false) String path, Model model) {
-        return Optional.of(SecurityContextHolder.getContext().getAuthentication())
-                .filter(Authentication::isAuthenticated)
-                .map(Authentication::getPrincipal)
-                .flatMap(principal -> principal instanceof AppUserDetails
-                        ? Optional.of((AppUserDetails) principal)
-                        : Optional.empty())
+        return getAuthenticatedUserDetails()
                 .map(appUserDetails -> {
                     Long id = appUserDetails.getUserId();
                     String userName = appUserDetails.getUsername();
                     String userRootFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
                     String resolvedPath = Optional.ofNullable(path).orElse("/");
-                    String fullPath = appendUserRootFolder(resolvedPath, userRootFolder);
+                    String fullPath = pathService.appendUserRootFolder(resolvedPath, userRootFolder);
                     List<BreadCrumbDTO> breadCrumb = breadCrumbService.getBreadCrumbsChain(fullPath);
                     model.addAttribute("userName", userName);
                     model.addAttribute("userObjects", breadCrumb);
@@ -59,11 +56,7 @@ public class HomeController {
     @GetMapping(value = "/home/create")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String createUserFolder() {
-        return Optional.of(SecurityContextHolder.getContext().getAuthentication())
-                .map(Authentication::getPrincipal)
-                .flatMap(principal -> principal instanceof AppUserDetails
-                        ? Optional.of((AppUserDetails) principal)
-                        : Optional.empty())
+        return getAuthenticatedUserDetails()
                 .map(appUserDetails -> {
                     Long id = appUserDetails.getUserId();
                     String userFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
@@ -87,34 +80,47 @@ public class HomeController {
     @DeleteMapping(value = "/home")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String removeUserObject(@RequestParam String pathToObject, HttpServletRequest request) {
-        return Optional.of(SecurityContextHolder.getContext().getAuthentication())
-                .map(Authentication::getPrincipal)
-                .flatMap(principal -> principal instanceof AppUserDetails
-                        ? Optional.of((AppUserDetails) principal)
-                        : Optional.empty())
+        return getAuthenticatedUserDetails()
                 .map(appUserDetails -> {
                     Long id = appUserDetails.getUserId();
                     String userRootFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
-                    String fullPath = appendUserRootFolder(pathToObject, userRootFolder);
+                    String fullPath = pathService.appendUserRootFolder(pathToObject, userRootFolder);
                     minioService.removeObject(fullPath);
                     return getPreviousPageByRequest(request).orElse("/home");
                 })
                 .orElse("/"); // Return "/" if user is not found or not authenticated
     }
 
+    @PostMapping("/home/rename")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @ResponseBody
+    public String renameObject(@RequestParam("newName") String newName, @RequestParam("oldName") String oldName, HttpServletRequest request) {
+        return getAuthenticatedUserDetails()
+                .map(appUserDetails -> {
+                    Long id = appUserDetails.getUserId();
+                    String userRootFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
+                    String oldPath = pathService.appendUserRootFolder(oldName, userRootFolder);
+                    String newPath = pathService.appendNewName(oldPath, newName);
+                    log.info(oldPath);
+                    log.info(newPath);
+                    minioService.renameObject(oldPath, newPath);
+                    return getPreviousPageByRequest(request).orElse("/home");
+                })
+                .orElse("/"); // Return "/" if user is not found or not authenticated
+    }
 
-    private String appendUserRootFolder(String path, String userRootFolder) {
-        String decodedPath = URLDecoder.decode(path, StandardCharsets.UTF_8);
-        if (!userRootFolder.endsWith("/")) {
-            userRootFolder = userRootFolder + "/";
-        }
-        if (decodedPath.startsWith("/")) {
-            decodedPath = decodedPath.substring(1);
-        }
-        return userRootFolder + decodedPath;
+
+    private Optional<AppUserDetails> getAuthenticatedUserDetails() {
+        return Optional.of(SecurityContextHolder.getContext().getAuthentication())
+                .filter(Authentication::isAuthenticated)
+                .map(Authentication::getPrincipal)
+                .flatMap(principal -> principal instanceof AppUserDetails
+                        ? Optional.of((AppUserDetails) principal)
+                        : Optional.empty());
     }
 
     private Optional<String> getPreviousPageByRequest(HttpServletRequest request) {
+        log.info("Referer is {}",request.getHeader("Referer"));
         return Optional.ofNullable(request.getHeader("Referer")).map(requestUrl -> "redirect:" + requestUrl);
     }
 

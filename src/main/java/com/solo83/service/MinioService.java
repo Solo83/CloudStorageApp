@@ -1,6 +1,8 @@
 package com.solo83.service;
 
 import io.minio.BucketExistsArgs;
+import io.minio.CopyObjectArgs;
+import io.minio.CopySource;
 import io.minio.ListObjectsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
@@ -45,13 +47,15 @@ public class MinioService {
         }
     }
 
-    public void createEmptyFolder(String pathToFolder) {
-        String newFolder = pathToFolder + DIRECTORY_PREFIX;
-        if (!isObjectExist(newFolder)) {
+    public void createEmptyFolder(String path) {
+        if(!path.endsWith(DIRECTORY_PREFIX)) {
+            path += DIRECTORY_PREFIX;
+        }
+        if (!isObjectExist(path)) {
             try {
                 minioClient.putObject(
                         PutObjectArgs.builder()
-                                .object(newFolder)
+                                .object(path)
                                 .bucket(env.getProperty("minio.bucket.name"))
                                 .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                                 .build());
@@ -85,6 +89,51 @@ public class MinioService {
         }
     }
 
+    public void renameObject(String oldPath, String newPath) {
+        try {
+            // Retrieve objects under oldPath
+            Iterable<Result<Item>> objects = getObjects(oldPath);
+
+            // Iterate over each object
+            for (Result<Item> result : objects) {
+                Item object = result.get();
+                String oldObjectName = object.objectName();
+                log.info("Renaming from {}", oldObjectName);
+
+                // Compute the new object name
+                String newObjectName = oldObjectName.replace(oldPath, newPath);
+                log.info("Renaming to {}", newObjectName);
+
+                // Define the source and destination for the copy operation
+                CopySource copySource = CopySource.builder()
+                        .bucket(env.getProperty("minio.bucket.name"))
+                        .object(oldObjectName)
+                        .build();
+
+                CopyObjectArgs copyObjectArgs = CopyObjectArgs.builder()
+                        .bucket(env.getProperty("minio.bucket.name"))
+                        .object(newObjectName)
+                        .source(copySource)
+                        .build();
+
+                // Perform the copy operation
+                minioClient.copyObject(copyObjectArgs);
+
+                // Remove the old object after successful copy
+                minioClient.removeObject(
+                        RemoveObjectArgs.builder()
+                                .bucket(env.getProperty("minio.bucket.name"))
+                                .object(oldObjectName)
+                                .build()
+                );
+            }
+        } catch (Exception e) {
+            // Log the exception with a message
+            log.error("Error renaming object from {} to {}", oldPath, newPath, e);
+            throw new RuntimeException("Error renaming objects", e);
+        }
+    }
+
     @SneakyThrows
     public Iterable<Result<Item>> getObjects(String path) {
         return minioClient.listObjects(
@@ -107,5 +156,4 @@ public class MinioService {
             throw new RuntimeException(e.getMessage());
         }
     }
-
 }
