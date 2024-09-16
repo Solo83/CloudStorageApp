@@ -101,14 +101,11 @@
            element.contentEditable="true";
            element.focus();
                element.addEventListener("keydown", function(event) {
-                   // If the user presses the "Enter" key on the keyboard
                    if (event.key === "Enter") {
-                       // Cancel the default action, if needed
                        event.preventDefault();
                        const text = element.innerText;
                        console.log("Введённый текст:", text);
 
-                       // Отправка данных на сервер
                        fetch('home/rename', {
                            method: 'POST',
                            headers: {
@@ -122,7 +119,6 @@
                        })
                            .then(response => response.text())
                            .then(data => {
-                               // Пример обработки данных
                                if (data.startsWith('redirect:')) {
                                    window.location.href = data.substring('redirect:'.length);
                                } else {
@@ -131,7 +127,6 @@
                            })
                            .catch(error => console.error('Error:', error));
 
-                       // Сбрасываем режим редактирования
                        element.contentEditable = "false";
                    }
 

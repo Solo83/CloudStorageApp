@@ -96,10 +96,6 @@ public class MinioService {
     }
 
     public void removeObject(String path) {
-        if (!isObjectExist(path)) {
-            log.warn("Object at path {} does not exist and cannot be removed.", path);
-            return;
-        }
         List<String> errorMessages = new ArrayList<>();
         Iterable<Result<Item>> objects = getObjects(path, true);
         for (Result<Item> object : objects) {
@@ -189,20 +185,5 @@ public class MinioService {
             log.error("An error occurred while checking existence of object {} from Minio: {}", path, e.getMessage());
             return false;
         }
-    }
-
-    public boolean checkAllChainsIsExists(String path) {
-        String[] split = path.split(DIRECTORY_SUFFIX);
-        if(split.length > 0) {
-            StringBuilder pathToObject = new StringBuilder();
-            for (String s : split) {
-                pathToObject.append(s).append(DIRECTORY_SUFFIX);
-                if (isObjectExist(pathToObject.toString())) {
-                    log.info("Object {} exists - {}", s, pathToObject);
-                }
-            }
-            return true;
-        }
-        return false;
     }
 }

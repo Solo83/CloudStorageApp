@@ -50,7 +50,7 @@ public class HomeController {
                     model.addAttribute("userObjects", breadCrumb);
                     return "index";
                 })
-                .orElse("redirect:/"); // Return "/" if user is not found or not authenticated
+                .orElse("redirect:/");
     }
 
 
@@ -70,7 +70,7 @@ public class HomeController {
 
                     return "redirect:/home";
                 })
-                .orElse("redirect:/"); // Return "/" if user is not found or not authenticated
+                .orElse("/");
     }
 
 
@@ -105,7 +105,6 @@ public class HomeController {
                 })
                 .orElse("/");
     }
-
 
     private Optional<AppUserDetails> getAuthenticatedUserDetails() {
         return Optional.of(SecurityContextHolder.getContext().getAuthentication())
