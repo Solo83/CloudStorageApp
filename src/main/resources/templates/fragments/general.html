@@ -20,10 +20,6 @@
             </button>
             <div class="collapse navbar-collapse" id="menuItems">
                 <div class="navbar-nav me-auto">
-                    <!--<a class="nav-link active" aria-current="page" href="home">Home</a>-->
-                    <!-- <a class="nav-link" href="#">Features</a>
-                     <a class="nav-link" href="#">Pricing</a>
-                     <a class="nav-link disabled" aria-disabled="true">Disabled</a>-->
                 </div>
                 <div class="navbar-nav ms-auto">
                     <div sec:authorize="!isAuthenticated()">
@@ -43,10 +39,9 @@
     </nav>
 </div>
 
-<div class="d-inline" th:fragment="remove_button">
+<div th:fragment="delete_button">
     <!-- Form for deletion -->
-    <form class="d-inline"
-          th:data-confirm-delete="${'Are you sure you want to delete ' + (item.isDirectory() ? 'folder' : 'file') + ' ' + item.simpleName() + '?'}"
+    <form th:data-confirm-delete="${'Are you sure you want to delete ' + (item.isDirectory() ? 'folder' : 'file') + ' ' + item.simpleName() + '?'}"
           th:action="@{/home(pathToObject=${item.urlEncodedPath()})}"
             method="post"
             onsubmit="return confirmDeletion(this)">
@@ -56,10 +51,11 @@
         <!-- Delete button -->
         <button type="submit"
                 th:title="${'Delete ' + (item.isDirectory() ? 'folder' : 'file') + ' ' + item.simpleName()}"
-                class="link-dark btn btn-link ">
+                class="btn border-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                 <path d="M5.5 0a.5.5 0 0 1 .5.5V1h5V.5a.5.5 0 0 1 1 0V1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-1.342l-.5 10H2.342l-.5-10H0a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1h1V.5a.5.5 0 0 1 .5-.5h4zM1.5 2v1h13V2H1.5zM4 4h8l.5 10H3.5L4 4z"/>
             </svg>
+            Delete
         </button>
     </form>
     <script>
@@ -69,6 +65,109 @@
         }
     </script>
 </div>
+
+
+<div th:fragment="rename_button">
+    <!-- Rename button -->
+    <button type="submit"
+            th:title="${'Rename ' + (item.isDirectory() ? 'folder' : 'file') + ' ' + item.simpleName()}"
+            th:attr="data-target=|id-${itemStat.count}|"
+            th:data-confirm-rename="${'Are you sure you want to rename ' + (item.isDirectory() ? 'folder' : 'file') + ' ' + item.simpleName() + '?'}"
+            th:data-oldURL="${item.urlEncodedPath()}"
+
+            onclick="focusOnRenamedObject(this)"
+            class="btn border-0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+             class="bi bi-pencil-square" viewBox="0 0 16 16">
+            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+        </svg>
+        Rename
+    </button>
+
+    <script>
+        function confirmRename(button) {
+            const confirmMessage = button.getAttribute('data-confirm-rename');
+            return confirm(confirmMessage);
+        }
+
+        function focusOnRenamedObject(button) {
+           if(confirmRename(button)){
+           const focusedId = button.getAttribute('data-target');
+           const oldName = button.getAttribute('data-oldURL');
+           const element = document.getElementById(focusedId);
+           const originalText = element.innerText;
+
+           element.contentEditable="true";
+           element.focus();
+               element.addEventListener("keydown", function(event) {
+                   // If the user presses the "Enter" key on the keyboard
+                   if (event.key === "Enter") {
+                       // Cancel the default action, if needed
+                       event.preventDefault();
+                       const text = element.innerText;
+                       console.log("Введённый текст:", text);
+
+                       // Отправка данных на сервер
+                       fetch('home/rename', {
+                           method: 'POST',
+                           headers: {
+                               'Content-Type': 'application/x-www-form-urlencoded'
+                           },
+                           credentials: 'include',
+                           body: new URLSearchParams({
+                               'newName': text,
+                               'oldName': oldName
+                           })
+                       })
+                           .then(response => response.text())
+                           .then(data => {
+                               // Пример обработки данных
+                               if (data.startsWith('redirect:')) {
+                                   window.location.href = data.substring('redirect:'.length);
+                               } else {
+                                   console.log(data);
+                               }
+                           })
+                           .catch(error => console.error('Error:', error));
+
+                       // Сбрасываем режим редактирования
+                       element.contentEditable = "false";
+                   }
+
+                   if (event.key === "Escape") {
+                       element.innerText = originalText;
+                       element.contentEditable = "false";
+                       event.preventDefault();
+                   }
+               });
+           }
+        }
+    </script>
+</div>
+
+<div class="d-inline" th:fragment="dropdown_menu">
+    <!-- Dropdown menu -->
+    <button type="button" class="btn dropdown-toggle border-0" data-bs-toggle="dropdown" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+        </svg>
+    </button>
+
+    <ul class="dropdown-menu">
+        <!-- Rename button -->
+        <li><a class="dropdown-item-left link-dark">
+            <th:block th:insert="~{fragments/general :: rename_button}"></th:block>
+        </a>
+        </li>
+        <!-- Remove button -->
+        <li><a class="dropdown-item-left link-dark">
+            <th:block th:insert="~{fragments/general :: delete_button}"></th:block>
+        </a>
+        </li>
+    </ul>
+</div>
+
 
 </body>
 </html>

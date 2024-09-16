@@ -2,6 +2,7 @@ package com.solo83.service;
 
 
 import com.solo83.dto.BreadCrumbDTO;
+import com.solo83.exception.MinioServiceException;
 import io.minio.Result;
 import io.minio.messages.Item;
 import lombok.AllArgsConstructor;
@@ -21,14 +22,10 @@ public class BreadCrumbService {
     private final MinioService minioService;
 
     public List<BreadCrumbDTO> getBreadCrumbsChain(String path) {
-        List<BreadCrumbDTO> breadCrumbDTOList = new ArrayList<>();
-        Iterable<Result<Item>> objects;
-        try {
-            objects = minioService.getObjects(path);
-        } catch (Exception e) {
-            log.error("Error fetching objects from Minio", e);
-            return breadCrumbDTOList; // return empty list on error
-        }
+
+        Iterable<Result<Item>> objects = minioService.getObjects(path,false);
+        String pathWithoutUserFolder = path.substring(path.indexOf("/")); // remove user folder from path
+        List<BreadCrumbDTO> breadCrumbDTOList = new ArrayList<>(createPathItemsBreadCrumb(pathWithoutUserFolder));
 
         for (Result<Item> result : objects) {
             String objectName = "";
@@ -36,19 +33,14 @@ public class BreadCrumbService {
                 objectName = result.get().objectName();
             } catch (Exception e) {
                 log.error("Error while getting objectName", e);
+                throw new MinioServiceException("Error while getting objectName " + result, e);
             }
 
-            String pathWithoutUserFolder = objectName.substring(path.indexOf("/")); // remove user folder from path
+            String objectNameWithoutUserFolder = objectName.substring(path.indexOf("/")); // remove user folder from path
             String objectNameWithoutPath = objectName.substring(path.length()); // remove path from objectName
-
-            if (objectNameWithoutPath.isEmpty()) {
-                breadCrumbDTOList.addAll(createPathItemsBreadCrumb(pathWithoutUserFolder));
-            } else {
-                breadCrumbDTOList.addAll(createSubItemsBreadcrumb(objectNameWithoutPath, pathWithoutUserFolder));
+            if (!objectNameWithoutPath.isEmpty()){breadCrumbDTOList.addAll(createSubItemsBreadcrumb(objectNameWithoutPath, objectNameWithoutUserFolder));
             }
         }
-
-        log.info("Number of items: {}", breadCrumbDTOList.size());
         return breadCrumbDTOList;
     }
 
