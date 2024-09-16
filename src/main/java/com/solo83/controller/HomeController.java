@@ -44,6 +44,7 @@ public class HomeController {
                     String userRootFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
                     String resolvedPath = Optional.ofNullable(path).orElse("/");
                     String fullPath = pathService.appendUserRootFolder(resolvedPath, userRootFolder);
+                    log.info("Full path: {}", fullPath);
                     List<BreadCrumbDTO> breadCrumb = breadCrumbService.getBreadCrumbsChain(fullPath);
                     model.addAttribute("userName", userName);
                     model.addAttribute("userObjects", breadCrumb);
@@ -63,13 +64,9 @@ public class HomeController {
                     minioService.createEmptyFolder(userFolder);
 
                     minioService.createEmptyFolder("user-3-files/test1/");
-                    minioService.createEmptyFolder("user-3-files/test1/test1subfolder1");
-                    minioService.createEmptyFolder("user-3-files/test2");
-                    minioService.createEmptyFolder("user-3-files/test3");
-                    minioService.createEmptyFolder("user-3-files/test2/test2subfolder1");
-                    minioService.createEmptyFolder("user-3-files/test2/test2subfolder1/subfolder1");
-                    minioService.createEmptyFolder("user-3-files/test2/test2subfolder1/subfolder1/subfolder2");
-                    minioService.createEmptyFolder("user-3-files/test5/test2subfolder1");
+                    minioService.createEmptyFolder("user-3-files/test2/test2subfolder/subfolder1/subfolder2");
+                    minioService.createEmptyFolder("user-3-files/test3/test3subfolder/subfolder1/subfolder2/subfolder3");
+                    minioService.createEmptyFolder("user-3-files/test4/test4subfolder");
 
                     return "redirect:/home";
                 })
@@ -88,7 +85,7 @@ public class HomeController {
                     minioService.removeObject(fullPath);
                     return getPreviousPageByRequest(request).orElse("/home");
                 })
-                .orElse("/"); // Return "/" if user is not found or not authenticated
+                .orElse("/");
     }
 
     @PostMapping("/home/rename")
@@ -100,13 +97,13 @@ public class HomeController {
                     Long id = appUserDetails.getUserId();
                     String userRootFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
                     String oldPath = pathService.appendUserRootFolder(oldName, userRootFolder);
-                    String newPath = pathService.appendNewName(oldPath, newName);
+                    String newPath = pathService.updatePathWithNewName(oldPath, newName);
                     log.info(oldPath);
                     log.info(newPath);
                     minioService.renameObject(oldPath, newPath);
                     return getPreviousPageByRequest(request).orElse("/home");
                 })
-                .orElse("/"); // Return "/" if user is not found or not authenticated
+                .orElse("/");
     }
 
 

@@ -96,9 +96,11 @@
            const focusedId = button.getAttribute('data-target');
            const oldName = button.getAttribute('data-oldURL');
            const element = document.getElementById(focusedId);
+           const originalText = element.innerText;
+
            element.contentEditable="true";
            element.focus();
-               element.addEventListener("keypress", function(event) {
+               element.addEventListener("keydown", function(event) {
                    // If the user presses the "Enter" key on the keyboard
                    if (event.key === "Enter") {
                        // Cancel the default action, if needed
@@ -132,13 +134,15 @@
                        // Сбрасываем режим редактирования
                        element.contentEditable = "false";
                    }
+
+                   if (event.key === "Escape") {
+                       element.innerText = originalText;
+                       element.contentEditable = "false";
+                       event.preventDefault();
+                   }
                });
-
-
            }
         }
-
-
     </script>
 </div>
 
