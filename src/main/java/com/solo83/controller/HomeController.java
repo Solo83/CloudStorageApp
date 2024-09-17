@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,7 +35,6 @@ public class HomeController {
     private final UserService userService;
     private final PathService pathService;
 
-
     @RequestMapping("/home")
     public String home(@RequestParam(value = "path", required = false) String path, Model model) {
         return getAuthenticatedUserDetails()
@@ -48,13 +48,31 @@ public class HomeController {
                     List<BreadCrumbDTO> breadCrumb = breadCrumbService.getBreadCrumbsChain(fullPath);
                     model.addAttribute("userName", userName);
                     model.addAttribute("userObjects", breadCrumb);
+                    model.addAttribute("currentPath", fullPath);
                     return "index";
                 })
-                .orElse("redirect:/"); // Return "/" if user is not found or not authenticated
+                .orElse("redirect:/");
     }
 
 
-    @GetMapping(value = "/home/create")
+    @PostMapping(value = "/home/create")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public String createEmptyFolder(@ModelAttribute("newFolderName") String newFolderName,
+                                   @ModelAttribute("currentPath") String currentPath, HttpServletRequest request) {
+        return getAuthenticatedUserDetails()
+                .map(appUserDetails -> {
+                    if (newFolderName!=null){
+                        String pathToNewFolder = pathService.getPathToNewFolder(currentPath, newFolderName);
+                        minioService.createEmptyFolder(pathToNewFolder);
+                        log.info("New folder was created: {}", pathToNewFolder);
+                        return getPreviousPageByRequest(request).orElse("/home");
+                    }
+                    return "redirect:/home";
+                })
+                .orElse("/");
+    }
+
+    @GetMapping (value = "/home/create")
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String createUserFolder() {
         return getAuthenticatedUserDetails()
@@ -62,17 +80,10 @@ public class HomeController {
                     Long id = appUserDetails.getUserId();
                     String userFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
                     minioService.createEmptyFolder(userFolder);
-
-                    minioService.createEmptyFolder("user-3-files/test1/");
-                    minioService.createEmptyFolder("user-3-files/test2/test2subfolder/subfolder1/subfolder2");
-                    minioService.createEmptyFolder("user-3-files/test3/test3subfolder/subfolder1/subfolder2/subfolder3");
-                    minioService.createEmptyFolder("user-3-files/test4/test4subfolder");
-
                     return "redirect:/home";
                 })
-                .orElse("redirect:/"); // Return "/" if user is not found or not authenticated
+                .orElse("/");
     }
-
 
     @DeleteMapping(value = "/home")
     @PreAuthorize("hasAuthority('ROLE_USER')")
@@ -98,14 +109,11 @@ public class HomeController {
                     String userRootFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
                     String oldPath = pathService.appendUserRootFolder(oldName, userRootFolder);
                     String newPath = pathService.updatePathWithNewName(oldPath, newName);
-                    log.info(oldPath);
-                    log.info(newPath);
                     minioService.renameObject(oldPath, newPath);
                     return getPreviousPageByRequest(request).orElse("/home");
                 })
                 .orElse("/");
     }
-
 
     private Optional<AppUserDetails> getAuthenticatedUserDetails() {
         return Optional.of(SecurityContextHolder.getContext().getAuthentication())
@@ -120,5 +128,4 @@ public class HomeController {
         log.info("Referer is {}",request.getHeader("Referer"));
         return Optional.ofNullable(request.getHeader("Referer")).map(requestUrl -> "redirect:" + requestUrl);
     }
-
 }

@@ -17,10 +17,13 @@ import io.minio.messages.Item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -96,10 +99,6 @@ public class MinioService {
     }
 
     public void removeObject(String path) {
-        if (!isObjectExist(path)) {
-            log.warn("Object at path {} does not exist and cannot be removed.", path);
-            return;
-        }
         List<String> errorMessages = new ArrayList<>();
         Iterable<Result<Item>> objects = getObjects(path, true);
         for (Result<Item> object : objects) {
@@ -124,6 +123,11 @@ public class MinioService {
     }
 
     public void renameObject(String oldPath, String newPath) {
+        if (isObjectExist(newPath)) {
+            log.warn("Object at path {} already exists and cannot be renamed to same name.", newPath);
+            return;
+        }
+
         try {
             Iterable<Result<Item>> objects = getObjects(oldPath,true);
 
@@ -175,6 +179,44 @@ public class MinioService {
         }
     }
 
+
+    public void uploadFile(MultipartFile file, String path) {
+        String objectName = path+file.getOriginalFilename();
+
+        Map<String, String> userMetaData = new HashMap<>();
+        if (file.getOriginalFilename() != null)
+            userMetaData.put("file-name", file.getOriginalFilename());
+
+        try {
+            minioClient.putObject(PutObjectArgs.builder()
+                    .bucket(env.getProperty("minio.bucket.name"))
+                    .object(objectName)
+                    .contentType(file.getContentType())
+                    .userMetadata(userMetaData)
+                    .stream(file.getInputStream(), file.getInputStream().available(), -1)
+                    .build());
+        } catch (Exception e) {
+            log.error("An error occurred while uploading file: {} - {}",file.getOriginalFilename(), e.getMessage());
+            throw new MinioServiceException("Error while uploading file, " +e.getMessage(), e);
+        }
+
+        /*StatObjectResponse statObj = minioClient.statObject(StatObjectArgs.builder()
+                .bucket(env.getProperty("minio.bucket.name"))
+                .object(objectName)
+                .build());
+
+        String fileName = statObj.userMetadata().get("file-name");
+        String contentDisposition = URLEncoder.encode("attachment; filename=\"%s\"".formatted(fileName), StandardCharsets.UTF_8);
+
+        return minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
+                .bucket(env.getProperty("minio.bucket.name"))
+                .object(objectName)
+                .extraQueryParams(Map.of("response-content-disposition", contentDisposition))
+                .expiry(1, TimeUnit.HOURS)
+                .method(Method.GET)
+                .build());*/
+    }
+
     private boolean isObjectExist(String path) {
         try {
             minioClient.statObject(StatObjectArgs.builder()
@@ -189,20 +231,5 @@ public class MinioService {
             log.error("An error occurred while checking existence of object {} from Minio: {}", path, e.getMessage());
             return false;
         }
-    }
-
-    public boolean checkAllChainsIsExists(String path) {
-        String[] split = path.split(DIRECTORY_SUFFIX);
-        if(split.length > 0) {
-            StringBuilder pathToObject = new StringBuilder();
-            for (String s : split) {
-                pathToObject.append(s).append(DIRECTORY_SUFFIX);
-                if (isObjectExist(pathToObject.toString())) {
-                    log.info("Object {} exists - {}", s, pathToObject);
-                }
-            }
-            return true;
-        }
-        return false;
     }
 }
