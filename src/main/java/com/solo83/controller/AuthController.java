@@ -65,12 +65,5 @@ public class AuthController {
         userService.saveUser(userDto);
         return "redirect:/register?success";
     }
-
-   /* @GetMapping("/admins")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public String pageForAdmins(){
-        return "This is page for only admins";
-    }
-*/
 }
 
