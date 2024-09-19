@@ -155,7 +155,6 @@ public class MinioService {
                                 .object(oldObjectName)
                                 .build()
                 );
-
                 log.info("Sucessfully renamed from {} to {}", oldPath, newPath);
             }
         } catch (Exception e) {
@@ -195,6 +194,7 @@ public class MinioService {
                     .userMetadata(userMetaData)
                     .stream(file.getInputStream(), file.getInputStream().available(), -1)
                     .build());
+            log.info("File successfully uploaded: {}", objectName);
         } catch (Exception e) {
             log.error("An error occurred while uploading file: {} - {}",file.getOriginalFilename(), e.getMessage());
             throw new MinioServiceException("Error while uploading file, " +e.getMessage(), e);

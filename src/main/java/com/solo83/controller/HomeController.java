@@ -16,11 +16,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,11 +56,11 @@ public class HomeController {
 
     @PostMapping(value = "/home/create")
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String createEmptyFolder(@ModelAttribute("newFolderName") String newFolderName,
-                                   @ModelAttribute("currentPath") String currentPath, HttpServletRequest request) {
+    public String createEmptyFolder(@RequestParam(value = "newFolderName", required = false) String newFolderName,
+                                    @RequestParam(value = "currentPath", required = false) String currentPath, HttpServletRequest request) {
         return getAuthenticatedUserDetails()
                 .map(appUserDetails -> {
-                    if (newFolderName!=null){
+                    if (newFolderName!=null && !newFolderName.isEmpty()) {
                         String pathToNewFolder = pathService.getPathToNewFolder(currentPath, newFolderName);
                         minioService.createEmptyFolder(pathToNewFolder);
                         log.info("New folder was created: {}", pathToNewFolder);
@@ -101,7 +100,6 @@ public class HomeController {
 
     @PostMapping("/home/rename")
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @ResponseBody
     public String renameObject(@RequestParam("newName") String newName, @RequestParam("oldName") String oldName, HttpServletRequest request) {
         return getAuthenticatedUserDetails()
                 .map(appUserDetails -> {
@@ -110,6 +108,30 @@ public class HomeController {
                     String oldPath = pathService.appendUserRootFolder(oldName, userRootFolder);
                     String newPath = pathService.updatePathWithNewName(oldPath, newName);
                     minioService.renameObject(oldPath, newPath);
+                    return getPreviousPageByRequest(request).orElse("/home");
+                })
+                .orElse("/");
+    }
+
+    @PostMapping("/home/upload")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public String uploadFile(@RequestParam(value = "uploadedFile", required = false) MultipartFile file,
+                             @RequestParam(value = "uploadedFolder", required = false) MultipartFile[] uploadedFolder,
+                             @RequestParam("currentPath") String currentPath, HttpServletRequest request) {
+        return getAuthenticatedUserDetails()
+                .map(appUserDetails -> {
+                    boolean isFolder = uploadedFolder != null && uploadedFolder.length > 0;
+                    boolean isFile = file != null;
+
+                    if (isFolder){
+                        for (MultipartFile uploadedFile : uploadedFolder) {
+                            minioService.uploadFile(uploadedFile, currentPath);
+                        }
+                        return getPreviousPageByRequest(request).orElse("/home");
+                    } else if(isFile) {
+                        minioService.uploadFile(file, currentPath);
+                        return getPreviousPageByRequest(request).orElse("/home");
+                    }
                     return getPreviousPageByRequest(request).orElse("/home");
                 })
                 .orElse("/");

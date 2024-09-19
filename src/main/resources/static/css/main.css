@@ -1,0 +1,63 @@
+.drop-zone {
+    margin-left: 10px;
+    padding: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: "Quicksand", sans-serif;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    color: #333333; /* Темный цвет текста */
+    border: 2px dashed #403e3e;
+    border-radius: 5px;
+    width: auto; /* Автоматическая ширина */
+    height: auto; /* Автоматическая высота */
+}
+
+.drop-zone--over {
+    border-style: solid;
+}
+
+.drop-zone__input {
+    display: none;
+}
+
+.drop-zone i {
+    margin-right: 5px; /* Отступ справа от иконки */
+}
+
+
+button.custom-button {
+    margin-left: 10px;
+    padding: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: "Quicksand", sans-serif;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    color: #333333; /* Темный цвет текста */
+    background-color: transparent; /* Прозрачный фон */
+    border: 2px solid #403e3e;
+    border-radius: 5px;
+    width: auto; /* Автоматическая ширина */
+    height: auto; /* Автоматическая высота */
+    outline: none; /* Убираем стандартное выделение */
+}
+
+.custom-button i {
+    margin-right: 5px; /* Отступ справа от иконки */
+}
+
+.d-flex {
+    gap: 5px; /* Устанавливает расстояние между элементами внутри flex-контейнера */
+    height: 22px;
+    align-items: center; /* Выравнивание по вертикали (по центру) */
+}
+
+
+
