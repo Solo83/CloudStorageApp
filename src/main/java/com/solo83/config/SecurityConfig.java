@@ -17,7 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @EnableMethodSecurity
 @AllArgsConstructor
-public class SecurityConfig {
+public class SecurityConfig{
 
     private final AppUserDetailsService appUserDetailsService;
 
@@ -33,9 +33,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return  http
                 .authorizeHttpRequests(auth -> auth
-                        //.requestMatchers("/admins").authenticated()
                         .requestMatchers("/home/**").authenticated()
-                        .requestMatchers("/","/register/**").permitAll())
+                        .requestMatchers("/**","/register/**").permitAll())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .defaultSuccessUrl("/home/create")
