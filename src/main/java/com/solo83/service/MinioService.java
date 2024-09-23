@@ -4,6 +4,7 @@ import com.solo83.exception.MinioServiceException;
 import io.minio.BucketExistsArgs;
 import io.minio.CopyObjectArgs;
 import io.minio.CopySource;
+import io.minio.GetObjectArgs;
 import io.minio.ListObjectsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
@@ -11,15 +12,18 @@ import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import io.minio.Result;
 import io.minio.StatObjectArgs;
-import io.minio.UploadObjectArgs;
+import io.minio.StatObjectResponse;
 import io.minio.errors.ErrorResponseException;
 import io.minio.messages.Item;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -83,18 +87,32 @@ public class MinioService {
         }
     }
 
-    public void uploadFile(String objectName, String path) {
-        try {
-            minioClient.uploadObject(
-                    UploadObjectArgs.builder()
+    public void downloadObject(String objectName, String path, HttpServletResponse response) {
+
+        try (InputStream inputStream = minioClient.getObject(
+                GetObjectArgs.builder()
+                        .bucket(env.getProperty("minio.bucket.name"))
+                        .object(path)
+                        .build())) {
+
+            StatObjectResponse stat = minioClient.statObject(
+                    StatObjectArgs.builder()
                             .bucket(env.getProperty("minio.bucket.name"))
-                            .object(objectName)
-                            .filename(path)
+                            .object(path)
                             .build());
-            log.info("{}/{} is successfully uploaded as object {} ", path, objectName,objectName);
+
+            response.setContentType("application/octet-stream");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + objectName + "\"");
+            response.setContentLengthLong(stat.size());
+
+            IOUtils.copy(inputStream, response.getOutputStream());
+            response.flushBuffer();
+
+            log.info("File {} successfully downloaded", objectName);
+
         } catch (Exception e) {
-            log.error("Error while uploading object {} - {}",path, e.getMessage());
-            throw new MinioServiceException("Error while uploading, " +e.getMessage(), e);
+            log.error("Error while downloading object {} - {}", objectName, e.getMessage());
+            throw new MinioServiceException("Error while downloading, " + e.getMessage(), e);
         }
     }
 
@@ -116,7 +134,6 @@ public class MinioService {
                 errorMessages.add(errorMessage);
             }
         }
-
         if (!errorMessages.isEmpty()) {
             throw new MinioServiceException("Errors occurred while removing objects: " + String.join(", ", errorMessages));
         }

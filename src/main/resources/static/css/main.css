@@ -59,5 +59,31 @@ button.custom-button {
     align-items: center; /* Выравнивание по вертикали (по центру) */
 }
 
+/* Изменение цвета при клике */
+.dropdown-item:active {
+    background-color: #ffffff; /* Цвет фона при нажатии */
+    color: black; /* Цвет текста при нажатии */
+}
 
 
+.dropdown-menu.show {
+    min-width: inherit;
+    display: inline-block;
+}
+
+/* Уменьшение отступов у элементов меню */
+.dropdown-menu .dropdown-item {
+    padding: 0 !important; /* Меньшие отступы */
+}
+
+.dropdown-menu .dropdown-item .btn {
+    font-size: 12px !important; /* Устанавливает размер шрифта для кнопок внутри элементов меню */
+}
+
+
+.search-input{
+    font-family: FontAwesome;
+    font-style: normal;
+    font-weight: normal;
+    text-decoration: inherit;
+}

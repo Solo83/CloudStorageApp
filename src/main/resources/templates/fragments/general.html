@@ -7,36 +7,54 @@
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
 </head>
 <body>
 <div th:fragment="navbar">
+
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/home">CloudStorageApp</a>
+            <!-- Logo -->
+            <a class="navbar-brand" href="/home">
+                <i class="bi bi-cloud"></i>
+                <span class="ms-1">CloudStorageApp</span>
+            </a>
+
+            <!-- Form for Search -->
+            <div class="flex-grow-1 d-flex justify-content-center" sec:authorize="isAuthenticated()">
+                <form class="d-flex" role="search">
+                    <div class="input-group mb-0">
+                        <input type="text" class="form-control search-input" placeholder="&#xf002; Search" aria-label="Search" aria-describedby="button-addon2">
+                        <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Search</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Menu -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuItems"
                     aria-controls="menuItems" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="menuItems">
-                <div class="navbar-nav me-auto">
-                </div>
-                <div class="navbar-nav ms-auto">
-                    <div sec:authorize="!isAuthenticated()">
-                        <div class="navbar-nav">
-                            <a class="nav-link" href="register"> Sign up</a>
-                            <a class="nav-link" href="login"> Sign in</a>
+                        <div class="collapse navbar-collapse" id="menuItems">
+                            <div class="navbar-nav me-auto">
+                            </div>
+                            <div class="navbar-nav ms-auto">
+                                <div sec:authorize="!isAuthenticated()">
+                                    <div class="navbar-nav">
+                                        <a class="nav-link" href="/register"> Sign up</a>
+                                        <a class="nav-link" href="/login"> Sign in</a>
+                                    </div>
+                                </div>
+                                <div sec:authorize="isAuthenticated()">
+                                    <div class="navbar-nav">
+                                        <a class="nav-link" href="/logout"> Logout</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div sec:authorize="isAuthenticated()">
-                        <div class="navbar-nav">
-                            <a class="nav-link" href="/logout"> Logout</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </nav>
 </div>
@@ -79,12 +97,31 @@
     <script type="text/javascript" th:src="@{/scripts/rename.js}"></script>
 </div>
 
+<div th:fragment="download_button">
+    <!-- Download button -->
+    <form th:action="@{/home/download}" method="get">
+        <input type="hidden" name="pathToObject" th:value="${item.urlEncodedPath()}"/>
+        <input type="hidden" name="objectName" th:value="${item.simpleName()}"/>
+        <button type="submit"
+                th:title="${'Download ' + (item.isDirectory() ? 'folder' : 'file') + ' ' + item.simpleName()}"
+                class="btn border-0 bi bi-cloud-arrow-down">
+            Download
+        </button>
+    </form>
+</div>
+
+
 <div class="d-inline" th:fragment="dropdown_menu">
     <!-- Dropdown menu -->
-    <button type="button" class="btn dropdown-toggle border-0 bi bi-list" data-bs-toggle="dropdown" aria-expanded="false">
+    <button type="button" class="btn btn-sm bi bi-three-dots border-0 bi bi-list" data-bs-toggle="dropdown" aria-expanded="false">
     </button>
 
     <ul class="dropdown-menu">
+        <!-- Download button -->
+        <li th:if="${!item.isDirectory()}"><a class="dropdown-item">
+            <th:block th:insert="~{fragments/general :: download_button}"></th:block>
+        </a>
+        </li>
         <!-- Rename button -->
         <li><a class="dropdown-item">
             <th:block th:insert="~{fragments/general :: rename_button}"></th:block>
@@ -151,7 +188,7 @@
 <div th:fragment="folder_upload">
     <form action="/home/upload" method="POST" enctype="multipart/form-data">
         <div id="folder_drop_zone" class="drop-zone">
-            <i class="bi bi-cloud-upload"></i>
+            <i class="bi bi-cloud-plus"></i>
             <span>Upload folder</span>
             <input type="file" webkitdirectory name="uploadedFolder" class="drop-zone__input">
             <input type="hidden" name="currentPath" th:value="${currentPath}" />

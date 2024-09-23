@@ -1,6 +1,5 @@
 window.addEventListener("DOMContentLoaded", (event) => {
     const inputElement = document.querySelector("#file_drop_zone .drop-zone__input");
-
     const dropZoneElement = document.getElementById("file_drop_zone");
     const formElement = dropZoneElement.closest("form"); // Найти форму
 
@@ -10,7 +9,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
 
     inputElement.addEventListener("change", (e) => {
         if (inputElement.files.length) {
-            formElement.submit(); // Автоматически отправить форму после выбора файла
+            formElement.submit();
         }
     });
 

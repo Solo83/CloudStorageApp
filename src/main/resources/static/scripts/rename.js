@@ -23,21 +23,11 @@ function focusOnRenamedObject(button) {
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    credentials: 'include',
                     body: new URLSearchParams({
                         'newName': text,
                         'oldName': oldName
                     })
-                })
-                    .then(response => response.text())
-                    .then(data => {
-                        if (data.startsWith('redirect:')) {
-                            window.location.href = data.substring('redirect:'.length);
-                        } else {
-                            console.log(data);
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
+                }).then(r => window.location.reload());
 
                 element.contentEditable = "false";
             }

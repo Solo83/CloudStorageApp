@@ -7,19 +7,25 @@ import com.solo83.service.MinioService;
 import com.solo83.service.PathService;
 import com.solo83.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,8 +62,9 @@ public class HomeController {
 
     @PostMapping(value = "/home/create")
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String createEmptyFolder(@RequestParam(value = "newFolderName", required = false) String newFolderName,
-                                    @RequestParam(value = "currentPath", required = false) String currentPath, HttpServletRequest request) {
+    public String createEmptyFolder(@RequestParam(value = "newFolderName") @NotNull @NotEmpty String newFolderName,
+                                    @RequestParam(value = "currentPath", required = false) String currentPath, HttpServletRequest request, BindingResult result) {
+
         return getAuthenticatedUserDetails()
                 .map(appUserDetails -> {
                     if (newFolderName!=null && !newFolderName.isEmpty()) {
@@ -82,6 +89,22 @@ public class HomeController {
                     return "redirect:/home";
                 })
                 .orElse("/");
+    }
+
+    @GetMapping("home/download")
+    public void downloadFile(@RequestParam String pathToObject,
+                             @RequestParam String objectName,
+                             HttpServletResponse response) {
+        try {
+            Optional<AppUserDetails> appUserDetails = getAuthenticatedUserDetails();
+            Long id = appUserDetails.get().getUserId();
+            String userFolder = userService.getUserRootFolder(String.valueOf(id.intValue()));
+            String fullPath = pathService.appendUserRootFolder(pathToObject,userFolder);
+            minioService.downloadObject(objectName,fullPath,response);
+        } catch (Exception e) {
+            log.error("Error during file download for object: {}", objectName, e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while downloading file", e);
+        }
     }
 
     @DeleteMapping(value = "/home")
