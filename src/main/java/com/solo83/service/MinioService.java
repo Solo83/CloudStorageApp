@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,18 +103,19 @@ public class MinioService {
                             .object(path)
                             .build());
 
+
             response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + objectName + "\"");
+            String encodedFileName = URLEncoder.encode(objectName, StandardCharsets.UTF_8).replace("+", "%20");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
             response.setContentLengthLong(stat.size());
 
             IOUtils.copy(inputStream, response.getOutputStream());
             response.flushBuffer();
 
-            log.info("File {} successfully downloaded", objectName);
-
+            log.info("File {} downloaded successfully", objectName);
         } catch (Exception e) {
-            log.error("Error while downloading object {} - {}", objectName, e.getMessage());
-            throw new MinioServiceException("Error while downloading, " + e.getMessage(), e);
+            log.error("Error while downloading a file {} - {}", objectName, e.getMessage());
+            throw new MinioServiceException("Error while downloading a file: " + e.getMessage(), e);
         }
     }
 
@@ -195,7 +198,6 @@ public class MinioService {
         }
     }
 
-
     public void uploadFile(MultipartFile file, String path) {
         String objectName = path+file.getOriginalFilename();
 
@@ -216,23 +218,30 @@ public class MinioService {
             log.error("An error occurred while uploading file: {} - {}",file.getOriginalFilename(), e.getMessage());
             throw new MinioServiceException("Error while uploading file, " +e.getMessage(), e);
         }
-
-        /*StatObjectResponse statObj = minioClient.statObject(StatObjectArgs.builder()
-                .bucket(env.getProperty("minio.bucket.name"))
-                .object(objectName)
-                .build());
-
-        String fileName = statObj.userMetadata().get("file-name");
-        String contentDisposition = URLEncoder.encode("attachment; filename=\"%s\"".formatted(fileName), StandardCharsets.UTF_8);
-
-        return minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
-                .bucket(env.getProperty("minio.bucket.name"))
-                .object(objectName)
-                .extraQueryParams(Map.of("response-content-disposition", contentDisposition))
-                .expiry(1, TimeUnit.HOURS)
-                .method(Method.GET)
-                .build());*/
     }
+
+    public List<Item> searchObjectsByName(String prefix, String objectName) {
+        List<Item> matchedItems = new ArrayList<>();
+
+        for (Result<Item> item : minioClient.listObjects(ListObjectsArgs.builder()
+                .bucket(env.getProperty("minio.bucket.name"))
+                .prefix(prefix)
+                .recursive(true)
+                .build())) {
+
+            try {
+                if (item.get().objectName().toLowerCase().contains(objectName.toLowerCase())) {
+                    matchedItems.add(item.get());
+                }
+            } catch (Exception e) {
+                log.error("An error occurred while searching objects: {}", e.getMessage());
+                throw new MinioServiceException("Error while while searching objects, " +e.getMessage(), e);
+            }
+        }
+        log.info("Search successful, objects quantity: {}", matchedItems.size());
+        return matchedItems;
+    }
+
 
     private boolean isObjectExist(String path) {
         try {

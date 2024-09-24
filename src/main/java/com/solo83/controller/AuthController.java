@@ -3,6 +3,7 @@ package com.solo83.controller;
 import com.solo83.dto.UserDto;
 import com.solo83.entity.User;
 import com.solo83.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,9 @@ public class AuthController {
     private final UserService userService;
 
     @GetMapping("/login")
-    String login() {
+    public String login(HttpSession session, Model model) {
+        model.addAttribute("errorMessage", session.getAttribute("errorMessage"));
+        session.removeAttribute("errorMessage");
         return "login";
     }
 

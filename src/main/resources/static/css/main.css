@@ -80,10 +80,3 @@ button.custom-button {
     font-size: 12px !important; /* Устанавливает размер шрифта для кнопок внутри элементов меню */
 }
 
-
-.search-input{
-    font-family: FontAwesome;
-    font-style: normal;
-    font-weight: normal;
-    text-decoration: inherit;
-}

@@ -29,7 +29,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
 
         if (e.dataTransfer.files.length) {
             inputElement.files = e.dataTransfer.files;
-            formElement.submit(); // Автоматически отправить форму после перетаскивания файла
+            formElement.submit();
         }
         dropZoneElement.classList.remove("drop-zone--over");
     })

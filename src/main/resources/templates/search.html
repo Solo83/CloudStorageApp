@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <th:block th:replace="~{fragments/general :: header}"></th:block>
+</head>
+<body>
+<!-- Navbar -->
+<th:block th:insert="~{fragments/general :: navbar}"></th:block>
+
+<!-- Show if Authenticated-->
+<div sec:authorize="isAuthenticated()" th:if="${results != null }">
+
+    <div class="container-fluid mt-4">
+        <h4>Search Results: </h4>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <div th:if="${results}" class="container-fluid ">
+            <div th:each="item : ${results}" class="d-flex align-items-center">
+                <!-- Files picture -->
+                <span class="bi bi-card-text"></span>
+                <a th:href="@{home(path=${item.urlEncodedPath()})}" th:text="${item.simpleName()}"></a>
+                <span th:text="${',size: ' + item.size()}"></span>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(results)}">
+            <p>No results found for your search.</p>
+        </div>
+    </div>
+
+
+
+
+</div>
+</body>
+</html>
+
+

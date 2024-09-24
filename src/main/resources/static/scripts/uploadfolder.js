@@ -82,17 +82,20 @@ window.addEventListener("DOMContentLoaded", (event) => {
         }
     }
 
-    async function processDirectory(directoryHandle, formData) {
-        let isEmpty = true;
+    async function processDirectory(directoryHandle, formData, currentPath = '') {
+        let isEmpty = true; // Флаг, чтобы определить, есть ли файлы в каталоге
+        // Используйте текущий путь для накопления полного пути
+        const basePath = currentPath ? currentPath + '/' + directoryHandle.name : directoryHandle.name;
+
         for await (const entry of directoryHandle.values()) {
-            const fullPath = directoryHandle.name + '/' + entry.name + (entry.kind === 'directory' ? '/' : '');
+            const fullPath = basePath + '/' + entry.name + (entry.kind === 'directory' ? '/' : '');
 
             if (entry.kind === 'file') {
                 const file = await entry.getFile();
                 formData.append('uploadedFolder', file, fullPath);
                 isEmpty = false;
-            } else {
-                await processDirectory(entry, formData, fullPath);
+            } else if (entry.kind === 'directory') {
+                await processDirectory(entry, formData, basePath); // Передаем базовый путь дальше
                 isEmpty = false;
             }
         }

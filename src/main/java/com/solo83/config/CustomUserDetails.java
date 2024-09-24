@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public class AppUserDetails implements UserDetails {
+public class CustomUserDetails implements UserDetails {
     private final User user;
 
     @Override

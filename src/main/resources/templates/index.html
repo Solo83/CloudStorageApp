@@ -10,8 +10,15 @@
 
 <!-- Show if Authenticated-->
 <div sec:authorize="isAuthenticated()" th:if="${userObjects != null }">
+
+    <!-- Error Messages -->
+    <div th:if="${errorMessage}" class="alert alert-danger small" role="alert">
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- Welcome header -->
     <div>
-        <p class="text-center pt-2" th:if="${#vars['userName']}" th:text="${'Welcome to Disk ' + userName}">
+        <p class="text-center pt-2" th:text="${'Welcome to Disk'}">
     </div>
 
     <!-- Actions -->
@@ -62,19 +69,17 @@
 
         <!-- Files -->
         <div class="container-fluid px-0 mt-3">
-
                 <div th:each="item : ${userObjects}" th:if="${!item.isDirectory()}" class="d-flex align-items-center">
                     <!-- Files picture -->
                     <span class="bi bi-card-text"></span>
                     <!-- File Name -->
-                    <a class="item-text editable link-dark link-underline-opacity-0" contenteditable="false" th:text="${item.simpleName()}" th:id="@{|id-${itemStat.count}|}"></a>
+                    <a class="item-text editable link-dark link-underline-opacity-0" contenteditable="false" th:text="${item.simpleName() + ',size: ' + item.size()}" th:id="@{|id-${itemStat.count}|}"></a>
                     <!-- File Dropdown menu -->
                     <th:block th:insert="~{fragments/general :: dropdown_menu}"></th:block>
                 </div>
 
         </div>
     </div>
-
 </div>
 </body>
 </html>
