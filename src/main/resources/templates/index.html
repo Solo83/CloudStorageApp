@@ -12,8 +12,9 @@
 <div sec:authorize="isAuthenticated()" th:if="${userObjects != null }">
 
     <!-- Error Messages -->
-    <div th:if="${errorMessage}" class="alert alert-danger small" role="alert">
-        <span th:text="${errorMessage}"></span>
+    <div th:if="${errorMessage}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
+        <strong th:text="${errorMessage}"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
     <!-- Welcome header -->
@@ -54,7 +55,7 @@
         <!-- Subfolders-->
         <div class="container-fluid px-0">
 
-                <div th:each="item : ${userObjects}" th:if="${item.isSubfolder()}" class="d-flex">
+                <div th:each="item : ${userObjects}" th:if="${item.isSubfolder()}" class="d-flex" id="subfolders">
                     <div th:if="${item.isSubfolder()}">
                         <!-- Subfolder picture -->
                         <span class="bi bi-folder2"></span>
@@ -64,20 +65,18 @@
                         <th:block th:insert="~{fragments/general :: dropdown_menu}"></th:block>
                     </div>
                 </div>
-
         </div>
 
         <!-- Files -->
         <div class="container-fluid px-0 mt-3">
-                <div th:each="item : ${userObjects}" th:if="${!item.isDirectory()}" class="d-flex align-items-center">
+                <div th:each="item : ${userObjects}" th:if="${!item.isDirectory()}" class="d-flex align-items-center" id="files">
                     <!-- Files picture -->
                     <span class="bi bi-card-text"></span>
                     <!-- File Name -->
-                    <a class="item-text editable link-dark link-underline-opacity-0" contenteditable="false" th:text="${item.simpleName() + ',size: ' + item.size()}" th:id="@{|id-${itemStat.count}|}"></a>
+                    <a class="item-text" contenteditable="false" th:text="${item.simpleName() + ',size: ' + item.size()}" th:id="@{|id-${itemStat.count}|}"></a>
                     <!-- File Dropdown menu -->
                     <th:block th:insert="~{fragments/general :: dropdown_menu}"></th:block>
                 </div>
-
         </div>
     </div>
 </div>

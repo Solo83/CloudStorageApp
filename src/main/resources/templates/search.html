@@ -12,12 +12,17 @@
 <div sec:authorize="isAuthenticated()" th:if="${results != null }">
 
     <div class="container-fluid mt-4">
-        <h4>Search Results: </h4>
-        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <h5>Search Results: </h5>
+
+        <!-- Error Messages -->
+        <div th:if="${error}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
+            <strong th:text="${error}"></strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
 
         <div th:if="${results}" class="container-fluid ">
             <div th:each="item : ${results}" class="d-flex align-items-center">
-                <!-- Files picture -->
                 <span class="bi bi-card-text"></span>
                 <a th:href="@{home(path=${item.urlEncodedPath()})}" th:text="${item.simpleName()}"></a>
                 <span th:text="${',size: ' + item.size()}"></span>
@@ -28,10 +33,6 @@
             <p>No results found for your search.</p>
         </div>
     </div>
-
-
-
-
 </div>
 </body>
 </html>

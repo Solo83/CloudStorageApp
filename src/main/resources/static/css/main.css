@@ -10,7 +10,7 @@
     font-size: 12px;
     cursor: pointer;
     color: #333333; /* Темный цвет текста */
-    border: 2px dashed #403e3e;
+    border: 1px dashed #403e3e;
     border-radius: 5px;
     width: auto; /* Автоматическая ширина */
     height: auto; /* Автоматическая высота */
@@ -42,21 +42,32 @@ button.custom-button {
     cursor: pointer;
     color: #333333; /* Темный цвет текста */
     background-color: transparent; /* Прозрачный фон */
-    border: 2px solid #403e3e;
+    border: 1px solid #403e3e;
     border-radius: 5px;
     width: auto; /* Автоматическая ширина */
     height: auto; /* Автоматическая высота */
     outline: none; /* Убираем стандартное выделение */
 }
 
-.custom-button i {
-    margin-right: 5px; /* Отступ справа от иконки */
+.search-input{
+    border: 1px solid #403e3e;
+    border-radius: 5px;
 }
 
-.d-flex {
-    gap: 5px; /* Устанавливает расстояние между элементами внутри flex-контейнера */
-    height: 22px;
-    align-items: center; /* Выравнивание по вертикали (по центру) */
+.search-input:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: #403e3e; /* или можно задать свой цвет */
+}
+
+
+.form-group input.form-control {
+    border: 1px solid #403e3e;
+    border-radius: 5px;
+}
+
+.custom-button i {
+    margin-right: 5px; /* Отступ справа от иконки */
 }
 
 /* Изменение цвета при клике */
@@ -65,6 +76,9 @@ button.custom-button {
     color: black; /* Цвет текста при нажатии */
 }
 
+.d-flex{
+    align-items: center; /* Выравнивание по вертикали (по центру) */
+}
 
 .dropdown-menu.show {
     min-width: inherit;
@@ -80,3 +94,33 @@ button.custom-button {
     font-size: 12px !important; /* Устанавливает размер шрифта для кнопок внутри элементов меню */
 }
 
+
+#subfolders {
+    padding: 10px; /* Внутренний отступ */
+    border-radius: 5px; /* Закругленные углы */
+    gap: 5px; /* Устанавливает расстояние между элементами внутри flex-контейнера */
+    height: 22px;
+    align-items: center; /* Выравнивание по вертикали (по центру) */
+}
+
+/* Стили для файлов */
+#files {
+    padding: 10px; /* Внутренний отступ */
+    border-radius: 5px; /* Закругленные углы */
+    gap: 5px; /* Устанавливает расстояние между элементами внутри flex-контейнера */
+    height: 22px;
+    align-items: center; /* Выравнивание по вертикали (по центру) */
+}
+
+#files .item-text {
+    color: #4e4e4e;
+    text-decoration: none;
+}
+
+
+
+@media (max-width: 992px) { /* Для экранов меньше 992px (размер lg и ниже) */
+    .d-lg-flex {
+        flex-direction: column; /* Изменение направления на вертикальное */
+    }
+}

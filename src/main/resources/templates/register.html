@@ -5,9 +5,8 @@
 </head>
 <body>
     <th:block  th:insert="~{fragments/general :: navbar}"/>
-    <div class="d-flex flex-column min-vh-100 min-vw-100">
-        <div class="flex-grow-1 justify-content-center align-items-top"> <!--align-items-center - to center-->
-            <form class="form-container" th:action="@{/register/save}" th:object="${user}" method="post">
+        <div class="d-flex justify-content-center">
+            <form class="form-container" th:action="@{/register/save}" th:object="${user}" method="post" style="max-width: 250px; width: 100%;">
                 <div class="form-group">
                     <h4 class="text-center font-weight-bold"> Please Sign up </h4>
                     <label>User name</label>
@@ -21,13 +20,19 @@
                     <label>Confirm password </label>
                     <input type="password" class="form-control" name="passwordConfirm" placeholder="Re-enter password">
                 </div>
-                <button type="submit" class="btn btn-primary btn-dark mt-1">Sign up</button>
+                <button type="submit" class="btn btn-primary btn-dark mt-1">Sign Up</button>
 
-                <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name Error</div>
-                <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password Error</div>
-                <div class="text-danger" th:if="${param.success}">You have been registered</div>
+                <!-- Messages -->
+                <div th:if="${#fields.hasErrors('name')}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong th:errors="*{name}">Name Error</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <div th:if="${#fields.hasErrors('password')}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong th:errors="*{password}">Password Error</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             </form>
         </div>
-    </div>
 </body>
 </html>

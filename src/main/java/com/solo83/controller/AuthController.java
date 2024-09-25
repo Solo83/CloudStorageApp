@@ -7,6 +7,9 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,14 +29,17 @@ public class AuthController {
 
     @GetMapping("/login")
     public String login(HttpSession session, Model model) {
-        model.addAttribute("errorMessage", session.getAttribute("errorMessage"));
-        session.removeAttribute("errorMessage");
-        return "login";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            model.addAttribute("errorMessage", session.getAttribute("errorMessage"));
+            session.removeAttribute("errorMessage");
+            return "login";
+        }
+        return "redirect:/home";
     }
 
     @GetMapping("/register")
     public String showRegistrationForm(Model model){
-        // create model object to store form data
         UserDto user = new UserDto();
         model.addAttribute("user", user);
         return "register";
@@ -42,7 +48,7 @@ public class AuthController {
     @PostMapping("/register/save")
     public String registration(
             @RequestParam String passwordConfirm,
-            @ModelAttribute("user") @Valid UserDto userDto,
+            @ModelAttribute("user")@Valid UserDto userDto,
                                BindingResult result,
                                Model model){
 
@@ -66,7 +72,7 @@ public class AuthController {
             return "/register";
         }
         userService.saveUser(userDto);
-        return "redirect:/register?success";
+        return "redirect:/login?success";
     }
 }
 

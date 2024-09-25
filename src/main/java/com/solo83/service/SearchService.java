@@ -18,7 +18,7 @@ public class SearchService {
     private final PathService pathService;
 
     public List<ItemDto> searchObjectsByName(String prefix, String query) {
-        return minioService.searchObjectsByName(prefix, query).stream()
+        return minioService.searchFilesByName(prefix, query).stream()
                 .filter(item -> !item.objectName().endsWith("/"))
                 .map(item -> {
                     String objectName = item.objectName();

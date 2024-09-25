@@ -220,7 +220,7 @@ public class MinioService {
         }
     }
 
-    public List<Item> searchObjectsByName(String prefix, String objectName) {
+    public List<Item> searchFilesByName(String prefix, String query) {
         List<Item> matchedItems = new ArrayList<>();
 
         for (Result<Item> item : minioClient.listObjects(ListObjectsArgs.builder()
@@ -230,7 +230,10 @@ public class MinioService {
                 .build())) {
 
             try {
-                if (item.get().objectName().toLowerCase().contains(objectName.toLowerCase())) {
+
+                String filename = item.get().objectName().substring(item.get().objectName().lastIndexOf("/") + 1);
+
+                if (filename.toLowerCase().contains(query.toLowerCase())) {
                     matchedItems.add(item.get());
                 }
             } catch (Exception e) {
