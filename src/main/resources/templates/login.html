@@ -5,28 +5,43 @@
 </head>
 <body>
     <th:block  th:insert="~{fragments/general :: navbar}"/>
-    <div class="d-flex flex-column min-vh-100 min-vw-100">
-        <div class="flex-grow-1 justify-content-center align-items-top"> <!--align-items-center - to center-->
-                <form class="form-container" th:action="@{/login}" method="post">
-                    <div class="form-group">
-                        <h4 class="text-center font-weight-bold"> Login </h4>
-                        <label>User name</label>
-                        <input type="text" class="form-control" name="username" placeholder="Enter username">
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" class="form-control" name="password" placeholder="Enter password">
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-dark mt-1">Sign in</button>
-                    <div class="form-footer">
-                        <p> Don't have an account? <a href="register">Sign Up</a></p>
-                    </div>
-                    <div class="text-danger" th:if="${param.error}">
-                        Invalid username or password</div>
-                    <div class="text-danger" th:if="${param.logout}">
-                        You have been logged out</div>
-                </form>
+    <div class="d-flex justify-content-center">
+        <form class="form-container" th:action="@{/login}" method="post" name="loginForm" style="max-width: 250px; width: 100%;">
+            <div class="form-group">
+                <h4 class="text-center font-weight-bold"> Login </h4>
+                <label>User name</label>
+                <input type="text" class="form-control" name="username" placeholder="Enter username">
             </div>
-        </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" name="password" placeholder="Enter password">
+            </div>
+            <button type="submit" class="btn btn-primary btn-dark mt-1">Sign In</button>
+            <div class="form-footer">
+                <p> Don't have an account? <a href="register">Sign Up</a></p>
+            </div>
+
+            <!-- Messages -->
+            <div th:if="${errorMessage}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
+                <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div th:if="${param.error}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
+                <span th:text="${'Invalid username and password.'}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div th:if="${param.logout}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
+                <span th:text="${'You have been logged out'}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div th:if="${param.success}" class="bi bi-exclamation-triangle-fill alert alert-success alert-dismissible fade show" role="alert">
+                <span>You have been registered, please login</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </form>
+    </div>
     </body>
 </html>

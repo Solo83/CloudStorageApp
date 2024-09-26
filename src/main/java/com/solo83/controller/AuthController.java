@@ -3,9 +3,13 @@ package com.solo83.controller;
 import com.solo83.dto.UserDto;
 import com.solo83.entity.User;
 import com.solo83.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -24,24 +28,33 @@ public class AuthController {
     private final UserService userService;
 
     @GetMapping("/login")
-    String login() {
-        return "login";
+    public String login(HttpSession session, Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            model.addAttribute("errorMessage", session.getAttribute("errorMessage"));
+            session.removeAttribute("errorMessage");
+            return "login";
+        }
+        return "redirect:/home";
     }
 
     @GetMapping("/register")
-    public String showRegistrationForm(Model model){
-        // create model object to store form data
-        UserDto user = new UserDto();
-        model.addAttribute("user", user);
-        return "register";
+    public String showRegistrationForm(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            UserDto user = new UserDto();
+            model.addAttribute("user", user);
+            return "register";
+        }
+        return "redirect:/home";
     }
 
     @PostMapping("/register/save")
     public String registration(
             @RequestParam String passwordConfirm,
             @ModelAttribute("user") @Valid UserDto userDto,
-                               BindingResult result,
-                               Model model){
+            BindingResult result,
+            Model model) {
 
         Optional<User> existingUserOpt = userService.findByName(userDto.getName());
 
@@ -53,17 +66,17 @@ public class AuthController {
             }
         }
 
-        if(!userDto.getPassword().equals(passwordConfirm)){
+        if (!userDto.getPassword().equals(passwordConfirm)) {
             result.rejectValue("password", "password",
                     "Password confirmation mismatch");
         }
 
-        if(result.hasErrors()){
+        if (result.hasErrors()) {
             model.addAttribute("user", userDto);
             return "/register";
         }
         userService.saveUser(userDto);
-        return "redirect:/register?success";
+        return "redirect:/login?success";
     }
 }
 

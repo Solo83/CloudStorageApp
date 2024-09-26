@@ -22,7 +22,7 @@ public class UserService {
     public void saveUser(UserDto userDto) {
         User user = new User();
         user.setName(userDto.getName());
-        // encrypt the password using spring security
+
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setRole("ROLE_USER");
         userRepository.save(user);
@@ -49,5 +49,4 @@ public class UserService {
         userDto.setName(user.getName());
         return userDto;
     }
-
 }
