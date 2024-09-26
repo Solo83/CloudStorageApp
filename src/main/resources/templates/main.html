@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <th:block th:replace="~{fragments/general :: header}"></th:block>
+</head>
+<body>
+<!-- Navbar -->
+<th:block th:insert="~{fragments/general :: navbar}"></th:block>
+
+<!-- Show if Authenticated-->
+<div sec:authorize="isAuthenticated()" th:if="${userObjects != null }">
+
+    <!-- Error Messages -->
+    <div th:if="${errorMessage}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show custom-alert" role="alert">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Welcome header -->
+    <div>
+        <p class="text-center pt-2" th:text="${'Welcome to Disk'}">
+    </div>
+    <!-- Actions -->
+    <div class="d-flex align-items-center">
+        <!-- Create new folder button -->
+        <th:block th:insert="~{fragments/general :: create_button}"></th:block>
+        <!-- File upload area -->
+        <th:block th:insert="~{fragments/general :: file_upload}"></th:block>
+        <!-- folder upload area -->
+        <th:block th:insert="~{fragments/general :: folder_upload}"></th:block>
+    </div>
+
+    <!-- Breadcrumbs -->
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb" class="breadcrumb ms-3 mt-3 d-flex align-items-center">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item" th:each="item : ${userObjects}"
+                th:if="${item.isDirectory() && !item.isSubfolder()}"
+                th:classappend="${item.isActive()} ? 'active' : ''">
+
+                <!-- Breadcrumb folder picture -->
+                <span th:remove="${!item.isActive()}? tag" class="bi bi-folder2-open"></span>
+                <span th:remove="${item.isActive()}? tag" class="bi bi-folder"></span>
+
+                <a th:remove="${item.isActive()}? tag" th:href="@{/home(path=${item.urlEncodedPath()})}"
+                   th:text="${item.simpleName()}"
+                   th:classappend="'link-dark'"></a>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Files and subfolders container -->
+    <div class="ms-3">
+
+        <!-- Subfolders-->
+        <div class="container-fluid px-0">
+                <div th:each="item : ${userObjects}" th:if="${item.isSubfolder()}" class="d-flex" id="subfolders">
+                    <div th:if="${item.isSubfolder()}">
+                        <!-- Subfolder picture -->
+                        <span class="bi bi-folder2"></span>
+                        <!-- Subfolder Name -->
+                        <a class="link-dark" contenteditable="false" th:text="${item.simpleName()}" th:href="@{/home(path=${item.urlEncodedPath()})}" th:id="@{|id-${itemStat.count}|}"></a>
+                        <!-- Subfolder Dropdown menu -->
+                        <th:block th:insert="~{fragments/general :: dropdown_menu}"></th:block>
+                    </div>
+                </div>
+        </div>
+
+        <!-- Files -->
+        <div class="container-fluid px-0 mt-3">
+                <div th:each="item : ${userObjects}" th:if="${!item.isDirectory()}" class="d-flex align-items-center" id="files">
+                    <!-- Files picture -->
+                    <span class="bi bi-card-text"></span>
+                    <!-- File Name -->
+                    <a class="item-text" contenteditable="false" th:text="${item.simpleName() + ',size: ' + item.size()}" th:id="@{|id-${itemStat.count}|}"></a>
+                    <!-- File Dropdown menu -->
+                    <th:block th:insert="~{fragments/general :: dropdown_menu}"></th:block>
+                </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+

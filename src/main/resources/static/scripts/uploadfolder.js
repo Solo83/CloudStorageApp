@@ -1,6 +1,5 @@
 window.addEventListener("DOMContentLoaded", (event) => {
     const supportsFileSystemAccessAPI = 'getAsFileSystemHandle' in DataTransferItem.prototype;
-
     const inputElement = document.querySelector("#folder_drop_zone .drop-zone__input");
     const dropZoneElement = document.getElementById("folder_drop_zone");
     const formElement = dropZoneElement.closest("form");
@@ -15,7 +14,9 @@ window.addEventListener("DOMContentLoaded", (event) => {
     });
 
     inputElement.addEventListener("change", async (e) => {
+        e.preventDefault();
         if (inputElement.files.length) {
+            dropZoneElement.classList.add("drop-zone--over");
             const formData = new FormData(formElement);
             for (let file of inputElement.files) {
                 formData.append('uploadedFolder', file, file.name);
@@ -38,6 +39,32 @@ window.addEventListener("DOMContentLoaded", (event) => {
     dropZoneElement.addEventListener('drop', async (e) => {
         e.preventDefault();
 
+        const items = e.dataTransfer.items;
+
+        if (items.length > 0 && items[0].webkitGetAsEntry().isFile) {
+            const errorMessage = "File upload is  not supported here";
+
+            if (formElement) {
+                const errorInput = document.createElement("input");
+                errorInput.type = "hidden";
+                errorInput.name = "error";
+                errorInput.value = errorMessage;
+                formElement.appendChild(errorInput);
+                formElement.submit();
+            } else {
+                console.error("Form not found");
+            }
+            dropZoneElement.classList.remove("drop-zone--over");
+            return;
+        }
+
+        const userConfirmed = confirm(`Would you like to upload folder "${e.dataTransfer.items[0].webkitGetAsEntry().name}"?`);
+        if (!userConfirmed) {
+            dropZoneElement.classList.remove("drop-zone--over");
+            return;
+        }
+
+        dropZoneElement.classList.add("drop-zone--over");
         const formData = new FormData(formElement);
 
         const fileHandlesPromises = [...e.dataTransfer.items]
@@ -51,7 +78,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
         const handles = await Promise.all(fileHandlesPromises);
 
         for (const handle of handles) {
-                await processDirectory(handle, formData);
+            await processDirectory(handle, formData);
         }
 
         fetch(formElement.action, {
@@ -66,10 +93,10 @@ window.addEventListener("DOMContentLoaded", (event) => {
                 }
             })
             .then(text => {
-                console.log('Файлы успешно загружены:', text);
+                console.log('Files uploaded successfully:', text);
             })
             .catch(error => {
-                console.error('Ошибка загрузки файлов:', error);
+                console.error('Error uploading files:', error);
             });
         dropZoneElement.classList.remove("drop-zone--over");
     });
@@ -83,40 +110,33 @@ window.addEventListener("DOMContentLoaded", (event) => {
     }
 
     async function processDirectory(directoryHandle, formData, currentPath = '') {
-        let isEmpty = true; // Флаг для определения, есть ли файлы в каталоге
-
-        // Используйте текущий путь для накопления полного пути
+        let isEmpty = true;
         const basePath = currentPath ? currentPath + '/' + directoryHandle.name : directoryHandle.name;
 
-        // Обходим все записи в директории
         for await (const entry of directoryHandle.values()) {
             const fullPath = basePath + '/' + entry.name + (entry.kind === 'directory' ? '/' : '');
 
             if (entry.kind === 'file') {
-                // Если это файл, добавляем его в formData
                 const file = await entry.getFile();
                 formData.append('uploadedFolder', file, fullPath);
-                isEmpty = false; // Найден файл, директория не пустая
+                isEmpty = false;
             } else if (entry.kind === 'directory') {
-                // Если это директория, рекурсивно обрабатываем её
-                const isSubfolderEmpty = await processDirectory(entry, formData, basePath); // Получаем статус подпапки
+                const isSubfolderEmpty = await processDirectory(entry, formData, basePath);
 
-                // Если подпапка оказалась пустой, добавляем пустой файл для неё
                 if (isSubfolderEmpty) {
-                    const emptyDirFile = new Blob([], {type: 'text/plain'}); // Создаём пустой файл
-                    formData.append('uploadedFolder', emptyDirFile, fullPath); // Добавляем пустую директорию в formData
-                    console.log(`Пустая папка добавлена: ${fullPath}`);
+                    const emptyDirFile = new Blob([], {type: 'text/plain'});
+                    formData.append('uploadedFolder', emptyDirFile, fullPath);
+                    console.log(`Empty folder added: ${fullPath}`);
                 }
-                isEmpty = false; // Найдена хотя бы одна подпапка, не пустая директория
+                isEmpty = false;
             }
         }
 
-        // Если директория пустая, добавляем пустой файл
         if (isEmpty) {
-            const emptyDirFile = new Blob([], {type: 'text/plain'}); // Создаём пустой файл
-            const directoryPath = basePath + '/'; // Полный путь для пустой директории
-            formData.append('uploadedFolder', emptyDirFile, directoryPath); // Добавляем пустую директорию в formData
-            console.log(`Пустая папка добавлена: ${directoryPath}`);
+            const emptyDirFile = new Blob([], {type: 'text/plain'});
+            const directoryPath = basePath + '/';
+            formData.append('uploadedFolder', emptyDirFile, directoryPath);
+            console.log(`Empty folder added: ${directoryPath}`);
         }
     }
 });

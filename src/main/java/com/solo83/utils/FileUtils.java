@@ -15,4 +15,17 @@ public class FileUtils {
         int digitGroups = (int) (Math.log10(size)/Math.log10(1024));
         return new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
+
+    public static long convertToBytes(String size) {
+        size = size.toUpperCase();
+        if (size.endsWith("MB")) {
+            return Long.parseLong(size.replace("MB", "").trim()) * 1024 * 1024;
+        } else if (size.endsWith("KB")) {
+            return Long.parseLong(size.replace("KB", "").trim()) * 1024;
+        } else if (size.endsWith("GB")) {
+            return Long.parseLong(size.replace("GB", "").trim()) * 1024 * 1024 * 1024;
+        } else {
+            return Long.parseLong(size.replace("B", "").trim());
+        }
+    }
 }

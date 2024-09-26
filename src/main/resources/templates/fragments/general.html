@@ -18,7 +18,6 @@
 </head>
 <body>
 <div th:fragment="navbar">
-
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container">
             <!-- Logo -->
@@ -26,16 +25,13 @@
                 <i class="bi bi-cloud"></i>
                 <span class="ms-1">CloudStorageApp</span>
             </a>
-
             <!-- Nav toggle for small screens -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuItems"
                     aria-controls="menuItems" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
             <!-- Centered Form for Search -->
             <div class="collapse navbar-collapse justify-content-center" id="menuItems">
-
                 <!-- Search Form -->
                 <div class="flex-grow-1 d-flex justify-content-center" sec:authorize="isAuthenticated()">
                     <form class="d-flex" role="search" th:action="@{/search}" method="get">
@@ -46,7 +42,6 @@
                         </div>
                     </form>
                 </div>
-
                 <!-- Links (Sign up, Sign in, Logout) -->
                 <div class="navbar-nav ms-auto">
                     <div sec:authorize="!isAuthenticated()" class="d-flex d-lg-flex justify-content-center align-items-center">
@@ -65,8 +60,8 @@
     </nav>
 </div>
 
+<!-- Form for deletion -->
 <div th:fragment="delete_button">
-    <!-- Form for deletion -->
     <form th:data-confirm-delete="${'Are you sure you want to delete ' + (item.isDirectory() ? 'folder' : 'file') + ' ' + item.simpleName() + '?'}"
           th:action="@{/home(pathToObject=${item.urlEncodedPath()})}"
           method="post"
@@ -89,8 +84,8 @@
     </script>
 </div>
 
+<!-- Rename button -->
 <div th:fragment="rename_button">
-    <!-- Rename button -->
     <button type="submit"
             th:title="${'Rename ' + (item.isDirectory() ? 'folder' : 'file') + ' ' + item.simpleName()}"
             th:attr="data-target=|id-${itemStat.count}|"
@@ -103,8 +98,8 @@
     <script type="text/javascript" th:src="@{/scripts/rename.js}"></script>
 </div>
 
+<!-- Download button -->
 <div th:fragment="download_button">
-    <!-- Download button -->
     <form th:action="@{/home/download}" method="get">
         <input type="hidden" name="pathToObject" th:value="${item.urlEncodedPath()}"/>
         <input type="hidden" name="objectName" th:value="${item.simpleName()}"/>
@@ -116,13 +111,11 @@
     </form>
 </div>
 
-
+<!-- Dropdown menu -->
 <div class="d-inline" th:fragment="dropdown_menu">
-    <!-- Dropdown menu -->
     <button type="button" class="btn btn-sm bi bi-three-dots border-0 bi bi-list" data-bs-toggle="dropdown"
             aria-expanded="false">
     </button>
-
     <ul class="dropdown-menu">
         <!-- Download button -->
         <li th:if="${!item.isDirectory()}"><a class="dropdown-item">

@@ -13,22 +13,14 @@
 
     <div class="container-fluid mt-4">
         <h5>Search Results: </h5>
-
-        <!-- Error Messages -->
-        <div th:if="${error}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
-            <strong th:text="${error}"></strong>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-
-
         <div th:if="${results}" class="container-fluid ">
             <div th:each="item : ${results}" class="d-flex align-items-center">
                 <span class="bi bi-card-text"></span>
-                <a th:href="@{home(path=${item.urlEncodedPath()})}" th:text="${item.simpleName()}"></a>
+                <a class="link-dark" th:href="@{home(path=${item.urlEncodedPath()})}"
+                   th:text="${item.simpleName()}"></a>
                 <span th:text="${',size: ' + item.size()}"></span>
             </div>
         </div>
-
         <div th:if="${#lists.isEmpty(results)}">
             <p>No results found for your search.</p>
         </div>

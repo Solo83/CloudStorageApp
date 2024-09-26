@@ -39,18 +39,22 @@ public class AuthController {
     }
 
     @GetMapping("/register")
-    public String showRegistrationForm(Model model){
-        UserDto user = new UserDto();
-        model.addAttribute("user", user);
-        return "register";
+    public String showRegistrationForm(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            UserDto user = new UserDto();
+            model.addAttribute("user", user);
+            return "register";
+        }
+        return "redirect:/home";
     }
 
     @PostMapping("/register/save")
     public String registration(
             @RequestParam String passwordConfirm,
-            @ModelAttribute("user")@Valid UserDto userDto,
-                               BindingResult result,
-                               Model model){
+            @ModelAttribute("user") @Valid UserDto userDto,
+            BindingResult result,
+            Model model) {
 
         Optional<User> existingUserOpt = userService.findByName(userDto.getName());
 
@@ -62,12 +66,12 @@ public class AuthController {
             }
         }
 
-        if(!userDto.getPassword().equals(passwordConfirm)){
+        if (!userDto.getPassword().equals(passwordConfirm)) {
             result.rejectValue("password", "password",
                     "Password confirmation mismatch");
         }
 
-        if(result.hasErrors()){
+        if (result.hasErrors()) {
             model.addAttribute("user", userDto);
             return "/register";
         }

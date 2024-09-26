@@ -6,16 +6,25 @@ import com.solo83.service.BreadCrumbService;
 import com.solo83.service.MinioService;
 import com.solo83.service.PathService;
 import com.solo83.service.UserService;
+import com.solo83.utils.FileUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -33,6 +42,15 @@ public class HomeController {
     private final UserService userService;
     private final PathService pathService;
 
+    @GetMapping("/")
+    public String home() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+            return "index";
+        }
+        return "redirect:/home";
+    }
+
     @RequestMapping("/home")
     public String home(@RequestParam(value = "path", required = false) String path, Model model,
                        @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -41,7 +59,7 @@ public class HomeController {
 
         model.addAttribute("userObjects", breadCrumb);
         model.addAttribute("currentPath", fullPath);
-        return "index";
+        return "main";
     }
 
     @PostMapping("/home/create")
@@ -84,7 +102,8 @@ public class HomeController {
 
     @DeleteMapping("/home")
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    public String removeUserObject(@RequestParam String pathToObject, HttpServletRequest request,
+    public String removeUserObject(@RequestParam String pathToObject,
+                                   HttpServletRequest request,
                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
         String fullPath = resolveFullPath(pathToObject, userDetails);
         minioService.removeObject(fullPath);
@@ -108,16 +127,43 @@ public class HomeController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public String uploadFile(@RequestParam(value = "uploadedFile", required = false) MultipartFile file,
                              @RequestParam(value = "uploadedFolder", required = false) MultipartFile[] uploadedFolder,
-                             @RequestParam("currentPath") String currentPath, HttpServletRequest request) {
+                             @RequestParam(value = "currentPath", required = false) String currentPath,
+                             HttpServletRequest request, @Value("${application.max.upload.size}")
+                                 String maxFileSize, RedirectAttributes redirectAttributes,
+                             @RequestParam(value = "error", required = false) String error) {
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("errorMessage", error);
+            return getPreviousPageByRequest(request).orElse("/home");
+        }
+
+        long maxUploadSize = FileUtils.convertToBytes(maxFileSize);
+        String attributeValue = String.format("Object is too large for upload, max upload size is %s.", maxFileSize);
+
         if (uploadedFolder != null && uploadedFolder.length > 0) {
+            long directorySize = 0;
+            for (MultipartFile multipartFile : uploadedFolder) {
+                directorySize += multipartFile.getSize();
+            }
+
+            if (directorySize > maxUploadSize) {
+                redirectAttributes.addFlashAttribute("errorMessage", attributeValue);
+                return getPreviousPageByRequest(request).orElse("/home");
+            }
+
             for (MultipartFile uploadedFile : uploadedFolder) {
                 minioService.uploadFile(uploadedFile, currentPath);
             }
         } else if (file != null) {
+            long fileSize = file.getSize();
+            if (fileSize > maxUploadSize) {
+                redirectAttributes.addFlashAttribute("errorMessage", attributeValue);
+                return getPreviousPageByRequest(request).orElse("/home");
+            }
             minioService.uploadFile(file, currentPath);
         }
         return getPreviousPageByRequest(request).orElse("/home");
     }
+
     private String resolveFullPath(String path, CustomUserDetails userDetails) {
         Long userId = userDetails.getUserId();
         String userRootFolder = userService.getUserRootFolder(userId.toString());

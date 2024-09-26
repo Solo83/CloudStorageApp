@@ -23,7 +23,7 @@ public class BreadCrumbService {
     public List<ItemDto> getBreadCrumbsChain(String path) {
 
         Iterable<Result<Item>> objects = minioService.getObjects(path,false);
-        String pathWithoutUserFolder = path.substring(path.indexOf("/")); // remove user folder from path
+        String pathWithoutUserFolder = path.substring(path.indexOf("/"));
         List<ItemDto> itemDtoList = new ArrayList<>(createPathItemsBreadCrumb(pathWithoutUserFolder));
 
         for (Result<Item> result : objects) {
@@ -37,10 +37,10 @@ public class BreadCrumbService {
                 throw new MinioServiceException("Error while getting objectName " + result, e);
             }
 
-            String objectNameWithoutUserFolder = objectName.substring(path.indexOf("/")); // remove user folder from path
-            String objectNameWithoutPath = objectName.substring(path.length()); // remove path from objectName
+            String objectNameWithoutUserFolder = objectName.substring(path.indexOf("/"));
+            String objectNameWithoutPath = objectName.substring(path.length());
             if (!objectNameWithoutPath.isEmpty()){
-                itemDtoList.addAll(createSubItemsBreadcrumb(objectNameWithoutPath, objectNameWithoutUserFolder,objectSize));
+                itemDtoList.addAll(createSubItems(objectNameWithoutPath, objectNameWithoutUserFolder,objectSize));
             }
         }
         return itemDtoList;
@@ -69,7 +69,7 @@ public class BreadCrumbService {
         return itemDtoList;
     }
 
-    private List<ItemDto> createSubItemsBreadcrumb(String objectNameWithoutPath, String pathWithoutUserFolder, String size) {
+    private List<ItemDto> createSubItems(String objectNameWithoutPath, String pathWithoutUserFolder, String size) {
         List<ItemDto> itemDtoList = new ArrayList<>();
         String[] split = objectNameWithoutPath.split("/");
 

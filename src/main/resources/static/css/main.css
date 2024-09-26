@@ -18,6 +18,14 @@
 
 .drop-zone--over {
     border-style: solid;
+    background-color: rgba(0, 0, 0, 0.1);
+    background-image: repeating-linear-gradient(
+            35deg, /* Угол наклона штрихов */
+            rgba(0, 0, 0, 0.1), /* Цвет штриха */
+            rgba(0, 0, 0, 0.1) 1px, /* Длина штриха */
+            transparent 2px, /* Прозрачный промежуток */
+            transparent 10px /* Ширина промежутка */
+    );
 }
 
 .drop-zone__input {
@@ -117,7 +125,14 @@ button.custom-button {
     text-decoration: none;
 }
 
+.form-control:focus {
+    box-shadow: none;
+}
 
+.custom-alert {
+    --bs-alert-padding-y: 15px;
+    font-size: 14px; /* Размер шрифта */
+}
 
 @media (max-width: 992px) { /* Для экранов меньше 992px (размер lg и ниже) */
     .d-lg-flex {

@@ -23,22 +23,22 @@
 
             <!-- Messages -->
             <div th:if="${errorMessage}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
-                <strong th:text="${errorMessage}"></strong>
+                <span th:text="${errorMessage}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
             <div th:if="${param.error}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
-                <strong th:text="${'Invalid username and password.'}"></strong>
+                <span th:text="${'Invalid username and password.'}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
             <div th:if="${param.logout}" class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
-                <strong th:text="${'You have been logged out'}"></strong>
+                <span th:text="${'You have been logged out'}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
             <div th:if="${param.success}" class="bi bi-exclamation-triangle-fill alert alert-success alert-dismissible fade show" role="alert">
-                <strong>You have been registered, please login</strong>
+                <span>You have been registered, please login</span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         </form>

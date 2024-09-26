@@ -34,11 +34,11 @@ public class PathService {
         }
 
         if (oldPath.endsWith(DIRECTORY_PREFIX)) {
-            newName+=DIRECTORY_PREFIX;
-            oldPath=oldPath.substring(0,oldPath.lastIndexOf(DIRECTORY_PREFIX));
-            return oldPath.substring(0,oldPath.lastIndexOf(DIRECTORY_PREFIX) + 1)+newName;
+            newName += DIRECTORY_PREFIX;
+            oldPath = oldPath.substring(0, oldPath.lastIndexOf(DIRECTORY_PREFIX));
+            return oldPath.substring(0, oldPath.lastIndexOf(DIRECTORY_PREFIX) + 1) + newName;
         }
-        return oldPath.substring(0,oldPath.lastIndexOf(DIRECTORY_PREFIX) + 1)+newName;
+        return oldPath.substring(0, oldPath.lastIndexOf(DIRECTORY_PREFIX) + 1) + newName;
     }
 
     public String getPathToNewFolder(String oldPath, String newFolderName) {
@@ -51,11 +51,10 @@ public class PathService {
         }
 
         if (oldPath.endsWith(DIRECTORY_PREFIX)) {
-            newFolderName+=DIRECTORY_PREFIX;
+            newFolderName += DIRECTORY_PREFIX;
 
         }
-
-        return oldPath+newFolderName;
+        return oldPath + newFolderName;
     }
 
     public String encodePath(String path) {
@@ -63,7 +62,7 @@ public class PathService {
             return URLEncoder.encode(path, StandardCharsets.UTF_8);
         } catch (Exception e) {
             log.error("Error encoding path", e);
-            return path; // return original path on encoding error
+            return path;
         }
     }
 
