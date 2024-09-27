@@ -1,0 +1,141 @@
+.drop-zone {
+    margin-left: 10px;
+    padding: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: "Quicksand", sans-serif;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    color: #333333; /* Темный цвет текста */
+    border: 1px dashed #403e3e;
+    border-radius: 5px;
+    width: auto; /* Автоматическая ширина */
+    height: auto; /* Автоматическая высота */
+}
+
+.drop-zone--over {
+    border-style: solid;
+    background-color: rgba(0, 0, 0, 0.1);
+    background-image: repeating-linear-gradient(
+            35deg, /* Угол наклона штрихов */
+            rgba(0, 0, 0, 0.1), /* Цвет штриха */
+            rgba(0, 0, 0, 0.1) 1px, /* Длина штриха */
+            transparent 2px, /* Прозрачный промежуток */
+            transparent 10px /* Ширина промежутка */
+    );
+}
+
+.drop-zone__input {
+    display: none;
+}
+
+.drop-zone i {
+    margin-right: 5px; /* Отступ справа от иконки */
+}
+
+
+button.custom-button {
+    margin-left: 10px;
+    padding: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: "Quicksand", sans-serif;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    color: #333333; /* Темный цвет текста */
+    background-color: transparent; /* Прозрачный фон */
+    border: 1px solid #403e3e;
+    border-radius: 5px;
+    width: auto; /* Автоматическая ширина */
+    height: auto; /* Автоматическая высота */
+    outline: none; /* Убираем стандартное выделение */
+}
+
+.search-input{
+    border: 1px solid #403e3e;
+    border-radius: 5px;
+}
+
+.search-input:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: #403e3e; /* или можно задать свой цвет */
+}
+
+
+.form-group input.form-control {
+    border: 1px solid #403e3e;
+    border-radius: 5px;
+}
+
+.custom-button i {
+    margin-right: 5px; /* Отступ справа от иконки */
+}
+
+/* Изменение цвета при клике */
+.dropdown-item:active {
+    background-color: #ffffff; /* Цвет фона при нажатии */
+    color: black; /* Цвет текста при нажатии */
+}
+
+.d-flex{
+    align-items: center; /* Выравнивание по вертикали (по центру) */
+}
+
+.dropdown-menu.show {
+    min-width: inherit;
+    display: inline-block;
+}
+
+/* Уменьшение отступов у элементов меню */
+.dropdown-menu .dropdown-item {
+    padding: 0 !important; /* Меньшие отступы */
+}
+
+.dropdown-menu .dropdown-item .btn {
+    font-size: 12px !important; /* Устанавливает размер шрифта для кнопок внутри элементов меню */
+}
+
+
+#subfolders {
+    padding: 10px; /* Внутренний отступ */
+    border-radius: 5px; /* Закругленные углы */
+    gap: 5px; /* Устанавливает расстояние между элементами внутри flex-контейнера */
+    height: 22px;
+    align-items: center; /* Выравнивание по вертикали (по центру) */
+}
+
+/* Стили для файлов */
+#files {
+    padding: 10px; /* Внутренний отступ */
+    border-radius: 5px; /* Закругленные углы */
+    gap: 5px; /* Устанавливает расстояние между элементами внутри flex-контейнера */
+    height: 22px;
+    align-items: center; /* Выравнивание по вертикали (по центру) */
+}
+
+#files .item-text {
+    color: #4e4e4e;
+    text-decoration: none;
+}
+
+.form-control:focus {
+    box-shadow: none;
+}
+
+.custom-alert {
+    --bs-alert-padding-y: 15px;
+    font-size: 14px; /* Размер шрифта */
+}
+
+@media (max-width: 992px) { /* Для экранов меньше 992px (размер lg и ниже) */
+    .d-lg-flex {
+        flex-direction: column; /* Изменение направления на вертикальное */
+    }
+}

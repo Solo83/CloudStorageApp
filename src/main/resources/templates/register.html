@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/general :: header}"/>
+</head>
+<body>
+<th:block th:insert="~{fragments/general :: navbar}"/>
+<div class="d-flex justify-content-center">
+    <form class="form-container" th:action="@{/register/save}" th:object="${user}" method="post"
+          style="max-width: 250px; width: 100%;">
+        <div class="form-group">
+            <h4 class="text-center font-weight-bold"> Please Sign up </h4>
+            <label>User name</label>
+            <input type="text" th:field="*{name}" class="form-control" name="username" placeholder="Enter username">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" th:field="*{password}" class="form-control" name="password"
+                   placeholder="Enter password">
+        </div>
+        <div class="form-group">
+            <label>Confirm password </label>
+            <input type="password" class="form-control" name="passwordConfirm" placeholder="Re-enter password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-dark mt-1">Sign Up</button>
+
+        <!-- Messages -->
+        <div th:if="${#fields.hasErrors('name')}"
+             class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
+            <span th:errors="*{name}">Name Error</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div th:if="${#fields.hasErrors('password')}"
+             class="bi bi-exclamation-triangle-fill alert alert-warning alert-dismissible fade show" role="alert">
+            <span th:errors="*{password}">Password Error</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </form>
+</div>
+</body>
+</html>
