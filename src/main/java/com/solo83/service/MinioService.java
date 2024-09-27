@@ -223,28 +223,25 @@ public class MinioService {
     public List<Item> searchFilesByName(String prefix, String query) {
         List<Item> matchedItems = new ArrayList<>();
 
-        for (Result<Item> item : minioClient.listObjects(ListObjectsArgs.builder()
-                .bucket(env.getProperty("minio.bucket.name"))
-                .prefix(prefix)
-                .recursive(true)
-                .build())) {
-
-            try {
-
-                String filename = item.get().objectName().substring(item.get().objectName().lastIndexOf("/") + 1);
-
-                if (filename.toLowerCase().contains(query.toLowerCase())) {
-                    matchedItems.add(item.get());
-                }
-            } catch (Exception e) {
-                log.error("An error occurred while searching objects: {}", e.getMessage());
-                throw new MinioServiceException("Error while while searching objects, " +e.getMessage(), e);
-            }
-        }
+        minioClient.listObjects(ListObjectsArgs.builder()
+                        .bucket(env.getProperty("minio.bucket.name"))
+                        .prefix(prefix)
+                        .recursive(true)
+                        .build())
+                .forEach(item -> {
+                    try {
+                        String filename = item.get().objectName().substring(item.get().objectName().lastIndexOf("/") + 1);
+                        if (filename.toLowerCase().contains(query.toLowerCase())) {
+                            matchedItems.add(item.get());
+                        }
+                    } catch (Exception e) {
+                        log.error("An error occurred while searching objects: {}", e.getMessage());
+                        throw new MinioServiceException("Error while searching objects, " + e.getMessage(), e);
+                    }
+                });
         log.info("Search successful, objects quantity: {}", matchedItems.size());
         return matchedItems;
     }
-
 
     private boolean isObjectExist(String path) {
         try {

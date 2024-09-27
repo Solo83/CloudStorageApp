@@ -72,7 +72,9 @@
                     <!-- Files picture -->
                     <span class="bi bi-card-text"></span>
                     <!-- File Name -->
-                    <a class="item-text" contenteditable="false" th:text="${item.simpleName() + ',size: ' + item.size()}" th:id="@{|id-${itemStat.count}|}"></a>
+                    <a class="item-text" contenteditable="false" th:text="${item.simpleName()}" th:id="@{|id-${itemStat.count}|}"></a>
+                    <!-- File size -->
+                    <span th:text="${',size: ' + item.size()}"></span>
                     <!-- File Dropdown menu -->
                     <th:block th:insert="~{fragments/general :: dropdown_menu}"></th:block>
                 </div>
